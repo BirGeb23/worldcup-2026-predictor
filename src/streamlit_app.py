@@ -1,5 +1,6 @@
 import base64
 import pickle
+import time
 import pandas as pd
 import streamlit as st
 from pathlib import Path
@@ -315,6 +316,196 @@ def generate_preview(home_team, away_team, h_stats, a_stats, h2h_data,
         f"On {venue}, {outcome_phrase} with {conf:.0%} model confidence. "
         f"{elo_line}{form_line}{h2h_line}"
     )
+
+
+def animate_prediction_reveal(
+    ph_flags, ph_winner, ph_probs, ph_insights, ctx: dict
+) -> None:
+    """Sequentially reveals prediction cards via st.empty() placeholders."""
+    ht = ctx["home_team"];  at = ctx["away_team"]
+    hf = ctx["home_flag"];  af = ctx["away_flag"]
+    p_home     = ctx["p_home"];   p_draw = ctx["p_draw"];  p_away = ctx["p_away"]
+    elo_diff   = ctx["elo_diff"]; form_diff = ctx["form_diff"]
+    h2h_val    = ctx["h2h"]
+    elo_color  = ctx["elo_color"];  form_color = ctx["form_color"]
+    adv_color  = ctx["adv_color"];  adv_text   = ctx["adv_text"]
+    h2h_data   = ctx["h2h_data"]
+    home_form  = ctx["home_form"];  away_form  = ctx["away_form"]
+    preview_text = ctx["preview_text"]
+
+    # ── Step 1 (0 ms): Both team flags slide in from opposite sides ───────────
+    ph_flags.markdown(f"""
+    <div class="reveal-flags">
+        <div class="reveal-flag reveal-flag-home">
+            <img src="{hf}" alt="{ht}" />
+            <span class="reveal-flag-name">{ht}</span>
+        </div>
+        <div class="reveal-vs-badge">
+            <div class="vs-circle"><span>VS</span></div>
+        </div>
+        <div class="reveal-flag reveal-flag-away">
+            <img src="{af}" alt="{at}" />
+            <span class="reveal-flag-name">{at}</span>
+        </div>
+    </div>""", unsafe_allow_html=True)
+    time.sleep(0.28)
+
+    # ── Step 2 (+280 ms): Winner announcement fades in ────────────────────────
+    ph_winner.markdown(f"""
+    <div class="pred-hero anim-pred-reveal">
+        {ctx["pred_icon_html"]}
+        <div class="pred-title">{ctx["winner_line"]}</div>
+        <div class="pred-sub">{ht} &nbsp;·&nbsp; {TOURNAMENT} &nbsp;·&nbsp; {at}</div>
+    </div>""", unsafe_allow_html=True)
+    time.sleep(0.22)
+
+    # ── Step 3 (+220 ms): Probability bars expand + insights grid ────────────
+    ph_probs.markdown(f"""
+    <div class="wc-card anim-fade-up">
+        <span class="wc-card-label">📊 Win Probabilities</span>
+        <div class="prob-row">
+            <span class="prob-label">🏠 {ht}</span>
+            <div class="prob-track"><div class="prob-fill prob-home" style="width:{p_home*100:.1f}%"></div></div>
+            <span class="prob-pct">{p_home:.0%}</span>
+        </div>
+        <div class="prob-row">
+            <span class="prob-label">🤝 Draw</span>
+            <div class="prob-track"><div class="prob-fill prob-draw" style="width:{p_draw*100:.1f}%"></div></div>
+            <span class="prob-pct">{p_draw:.0%}</span>
+        </div>
+        <div class="prob-row">
+            <span class="prob-label">✈️ {at}</span>
+            <div class="prob-track"><div class="prob-fill prob-away" style="width:{p_away*100:.1f}%"></div></div>
+            <span class="prob-pct">{p_away:.0%}</span>
+        </div>
+    </div>
+    <div class="wc-card anim-fade-up anim-d1">
+        <span class="wc-card-label">🔍 Match Insights</span>
+        <div class="insight-grid">
+            <div class="insight-cell">
+                <div class="insight-value" style="color:{elo_color};">{elo_diff:+.0f}</div>
+                <div class="insight-label">Elo Edge</div>
+            </div>
+            <div class="insight-cell">
+                <div class="insight-value" style="color:{form_color};">{form_diff:+.0%}</div>
+                <div class="insight-label">Form Edge</div>
+            </div>
+            <div class="insight-cell">
+                <div class="insight-value">{h2h_val:.0%}</div>
+                <div class="insight-label">H2H Win Rate</div>
+            </div>
+            <div class="insight-cell">
+                <div class="insight-value" style="color:{adv_color};">{adv_text}</div>
+                <div class="insight-label">Home Advantage</div>
+            </div>
+        </div>
+    </div>""", unsafe_allow_html=True)
+    time.sleep(0.18)
+
+    # ── Step 4 (+180 ms): All insight panels fade in together ─────────────────
+    total  = h2h_data["total"]
+    hw_cnt = h2h_data["home_wins"]
+    d_cnt  = h2h_data["draws"]
+    aw_cnt = h2h_data["away_wins"]
+
+    if h2h_data["last5"]:
+        rows = ""
+        for m in h2h_data["last5"]:
+            bc = {"W": "badge-w", "D": "badge-d", "L": "badge-l"}[m["result"]]
+            bt = {"W": "WIN",     "D": "DRAW",    "L": "LOSS"}[m["result"]]
+            rows += (
+                f'<div class="meeting-row">'
+                f'<span class="meeting-date">{m["date"]}</span>'
+                f'<span class="meeting-score">{m["score"]}</span>'
+                f'<span class="meeting-badge {bc}">{bt}</span>'
+                f'</div>'
+            )
+        last5_html = (
+            f'<div class="meetings-list">'
+            f'<div class="meetings-title">Last {len(h2h_data["last5"])} meetings</div>'
+            f'{rows}</div>'
+        )
+    else:
+        last5_html = '<p style="color:#94a3b8;font-size:0.82rem;text-align:center;padding:0.5rem 0;">No head-to-head records found.</p>'
+
+    no_h2h = (
+        "" if total > 0
+        else '<p style="color:#94a3b8;font-size:0.82rem;text-align:center;">First ever meeting between these sides.</p>'
+    )
+
+    def _dots(form):
+        if not form:
+            return '<span style="color:#94a3b8;font-size:0.8rem;">No data</span>'
+        cls_map = {"W": "dot-w", "D": "dot-d", "L": "dot-l"}
+        return "".join(f'<span class="dot {cls_map[r]}">{r}</span>' for r in form)
+
+    def _players_html(team):
+        players = KEY_PLAYERS.get(team, [f"Player {i}" for i in range(1, 6)])
+        return "".join(
+            f'<div class="player-item"><span class="player-num">{i}</span>'
+            f'<span class="player-name">{p}</span></div>'
+            for i, p in enumerate(players, 1)
+        )
+
+    home_dots = _dots(home_form)
+    away_dots = _dots(away_form)
+    home_plrs = _players_html(ht)
+    away_plrs = _players_html(at)
+
+    ph_insights.markdown(f"""
+    <div class="wc-card anim-fade-up">
+        <span class="wc-card-label">⚔️ Head-to-Head History</span>
+        <div class="h2h-breakdown">
+            <div class="h2h-team-block">
+                <div class="h2h-team-name">{ht}</div>
+                <div class="h2h-count-big" style="color:#1e293b;">{hw_cnt}</div>
+                <div class="h2h-count-label">Wins</div>
+            </div>
+            <div class="h2h-divider"></div>
+            <div class="h2h-team-block">
+                <div class="h2h-team-name">Draws</div>
+                <div class="h2h-count-big" style="color:#94a3b8;">{d_cnt}</div>
+                <div class="h2h-count-label">from {total} matches</div>
+            </div>
+            <div class="h2h-divider"></div>
+            <div class="h2h-team-block">
+                <div class="h2h-team-name">{at}</div>
+                <div class="h2h-count-big" style="color:var(--red);">{aw_cnt}</div>
+                <div class="h2h-count-label">Wins</div>
+            </div>
+        </div>
+        {no_h2h}{last5_html}
+    </div>
+    <div class="wc-card anim-fade-up anim-d1">
+        <span class="wc-card-label">📈 Recent Form — Last 5 Matches</span>
+        <div class="form-section">
+            <div class="form-team-row">
+                <span class="form-team-label">{ht}</span>
+                <div class="form-dots">{home_dots}</div>
+            </div>
+            <div class="form-team-row">
+                <span class="form-team-label">{at}</span>
+                <div class="form-dots">{away_dots}</div>
+            </div>
+        </div>
+    </div>
+    <div class="wc-card anim-fade-up anim-d2">
+        <span class="wc-card-label">⭐ Key Players</span>
+        <div class="players-grid">
+            <div>
+                <div class="players-col-title">{ht}</div>
+                {home_plrs}
+            </div>
+            <div>
+                <div class="players-col-title">{at}</div>
+                {away_plrs}
+            </div>
+        </div>
+    </div>
+    <div class="wc-card anim-fade-up anim-d3">
+        <span class="wc-card-label">📝 Match Preview</span>
+        <div class="preview-box">{preview_text}</div>
+    </div>""", unsafe_allow_html=True)
 
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -659,6 +850,27 @@ hr { border: none !important; border-top: 1px solid #e4eaf3 !important; margin: 
     font-size: 0.88rem; font-style: italic; color: #334155; line-height: 1.72;
     margin-top: 0.25rem;
 }
+
+/* ═══════════════════════ REVEAL ANIMATION ═══════════════════════ */
+@keyframes slideFromLeft  { from { opacity:0; transform:translateX(-52px); } to { opacity:1; transform:translateX(0); } }
+@keyframes slideFromRight { from { opacity:0; transform:translateX( 52px); } to { opacity:1; transform:translateX(0); } }
+
+.reveal-flags {
+    display: flex; align-items: center; justify-content: center; gap: 2rem;
+    padding: 1.5rem 2rem; margin: 1.25rem 0 0;
+    background: var(--card); border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 30px rgba(0,0,0,0.07);
+}
+.reveal-flag      { display: flex; flex-direction: column; align-items: center; gap: 0.55rem; }
+.reveal-flag img  { width: 64px; height: auto; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,0.22); }
+.reveal-flag-name {
+    font-size: 0.85rem; font-weight: 700; color: #1e293b;
+    text-align: center; max-width: 100px; line-height: 1.2;
+}
+.reveal-flag-home { animation: slideFromLeft  0.5s cubic-bezier(0.22,1,0.36,1) both; }
+.reveal-flag-away { animation: slideFromRight 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+.reveal-vs-badge  { animation: fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.15s both; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -777,201 +989,58 @@ if predict:
         else "Draw"
     )
 
-    if prediction == "home_win":
-        flag_url = TEAM_LOGOS.get(home_team, "")
-    elif prediction == "away_win":
-        flag_url = TEAM_LOGOS.get(away_team, "")
-    else:
-        flag_url = ""
+    flag_url = TEAM_LOGOS.get(home_team if prediction == "home_win" else away_team, "")
+    pred_icon_html = (
+        f'<img src="{flag_url}" '
+        f'style="width:40px;height:auto;border-radius:5px;'
+        f'box-shadow:0 3px 14px rgba(0,0,0,0.45);'
+        f'display:block;margin:0 auto 0.5rem;position:relative;z-index:1;" />'
+    ) if flag_url else '<div class="pred-emoji">🤝</div>'
 
-    if flag_url:
-        pred_icon_html = (
-            f'<img src="{flag_url}" '
-            f'style="width:40px;height:auto;border-radius:5px;'
-            f'box-shadow:0 3px 14px rgba(0,0,0,0.45);'
-            f'display:block;margin:0 auto 0.5rem;position:relative;z-index:1;" />'
-        )
-    else:
-        pred_icon_html = '<div class="pred-emoji">🤝</div>'
-
-    # Prediction card
-    st.markdown(f"""
-    <div class="pred-hero anim-pred-reveal" style="margin:1.25rem 0 1.25rem;">
-        {pred_icon_html}
-        <div class="pred-title">{winner_line}</div>
-        <div class="pred-sub">{home_team} &nbsp;·&nbsp; {TOURNAMENT} &nbsp;·&nbsp; {away_team}</div>
-    </div>""", unsafe_allow_html=True)
-
-    # Probability bars card
-    p_home = prob_map.get("home_win", 0.0)
-    p_draw = prob_map.get("draw",     0.0)
-    p_away = prob_map.get("away_win", 0.0)
-
-    st.markdown(f"""
-    <div class="wc-card anim-fade-up anim-d1">
-        <span class="wc-card-label">📊 Win Probabilities</span>
-        <div class="prob-row">
-            <span class="prob-label">🏠 {home_team}</span>
-            <div class="prob-track"><div class="prob-fill prob-home" style="width:{p_home*100:.1f}%"></div></div>
-            <span class="prob-pct">{p_home:.0%}</span>
-        </div>
-        <div class="prob-row">
-            <span class="prob-label">🤝 Draw</span>
-            <div class="prob-track"><div class="prob-fill prob-draw" style="width:{p_draw*100:.1f}%"></div></div>
-            <span class="prob-pct">{p_draw:.0%}</span>
-        </div>
-        <div class="prob-row">
-            <span class="prob-label">✈️ {away_team}</span>
-            <div class="prob-track"><div class="prob-fill prob-away" style="width:{p_away*100:.1f}%"></div></div>
-            <span class="prob-pct">{p_away:.0%}</span>
-        </div>
-    </div>""", unsafe_allow_html=True)
-
-    # Match Insights card
-    h_stats   = team_stats.get(home_team, {"elo": 1500, "wr": 0.33, "gd": 0.0})
-    a_stats   = team_stats.get(away_team, {"elo": 1500, "wr": 0.33, "gd": 0.0})
-    elo_diff  = h_stats["elo"] - a_stats["elo"]
-    form_diff = h_stats["wr"]  - a_stats["wr"]
-    adv_text  = "None" if neutral else "Active"
+    p_home     = prob_map.get("home_win", 0.0)
+    p_draw     = prob_map.get("draw",     0.0)
+    p_away     = prob_map.get("away_win", 0.0)
+    h_stats    = team_stats.get(home_team, {"elo": 1500, "wr": 0.33, "gd": 0.0})
+    a_stats    = team_stats.get(away_team, {"elo": 1500, "wr": 0.33, "gd": 0.0})
+    elo_diff   = h_stats["elo"] - a_stats["elo"]
+    form_diff  = h_stats["wr"]  - a_stats["wr"]
+    adv_text   = "None" if neutral else "Active"
     adv_color  = "#94a3b8" if neutral else "#f1f5f9"
     elo_color  = "#f1f5f9" if elo_diff  >= 0 else "#E8112D"
     form_color = "#f1f5f9" if form_diff >= 0 else "#E8112D"
-
-    st.markdown(f"""
-    <div class="wc-card anim-fade-up anim-d2">
-        <span class="wc-card-label">🔍 Match Insights</span>
-        <div class="insight-grid">
-            <div class="insight-cell">
-                <div class="insight-value" style="color:{elo_color};">{elo_diff:+.0f}</div>
-                <div class="insight-label">Elo Edge</div>
-            </div>
-            <div class="insight-cell">
-                <div class="insight-value" style="color:{form_color};">{form_diff:+.0%}</div>
-                <div class="insight-label">Form Edge</div>
-            </div>
-            <div class="insight-cell">
-                <div class="insight-value">{h2h:.0%}</div>
-                <div class="insight-label">H2H Win Rate</div>
-            </div>
-            <div class="insight-cell">
-                <div class="insight-value" style="color:{adv_color};">{adv_text}</div>
-                <div class="insight-label">Home Advantage</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
-
-    # ── H2H History card ──────────────────────────────────────────────────────
-    total   = h2h_data["total"]
-    hw_cnt  = h2h_data["home_wins"]
-    d_cnt   = h2h_data["draws"]
-    aw_cnt  = h2h_data["away_wins"]
-
-    if h2h_data["last5"]:
-        meetings_rows = ""
-        for m in h2h_data["last5"]:
-            bc = {"W": "badge-w", "D": "badge-d", "L": "badge-l"}[m["result"]]
-            bt = {"W": "WIN",     "D": "DRAW",    "L": "LOSS"}[m["result"]]
-            meetings_rows += (
-                f'<div class="meeting-row">'
-                f'<span class="meeting-date">{m["date"]}</span>'
-                f'<span class="meeting-score">{m["score"]}</span>'
-                f'<span class="meeting-badge {bc}">{bt}</span>'
-                f'</div>'
-            )
-        last5_html = (
-            f'<div class="meetings-list">'
-            f'<div class="meetings-title">Last {len(h2h_data["last5"])} meetings</div>'
-            f'{meetings_rows}</div>'
-        )
-    else:
-        last5_html = '<p style="color:#94a3b8;font-size:0.82rem;text-align:center;padding:0.5rem 0;">No head-to-head records found.</p>'
-
-    no_h2h_note = "" if total > 0 else '<p style="color:#94a3b8;font-size:0.82rem;text-align:center;padding:0.25rem 0 0;">First ever meeting between these sides.</p>'
-
-    st.markdown(f"""
-    <div class="wc-card anim-fade-up anim-d3">
-        <span class="wc-card-label">⚔️ Head-to-Head History</span>
-        <div class="h2h-breakdown">
-            <div class="h2h-team-block">
-                <div class="h2h-team-name">{home_team}</div>
-                <div class="h2h-count-big" style="color:#1e293b;">{hw_cnt}</div>
-                <div class="h2h-count-label">Wins</div>
-            </div>
-            <div class="h2h-divider"></div>
-            <div class="h2h-team-block">
-                <div class="h2h-team-name">Draws</div>
-                <div class="h2h-count-big" style="color:#94a3b8;">{d_cnt}</div>
-                <div class="h2h-count-label">from {total} matches</div>
-            </div>
-            <div class="h2h-divider"></div>
-            <div class="h2h-team-block">
-                <div class="h2h-team-name">{away_team}</div>
-                <div class="h2h-count-big" style="color:var(--red);">{aw_cnt}</div>
-                <div class="h2h-count-label">Wins</div>
-            </div>
-        </div>
-        {no_h2h_note}{last5_html}
-    </div>""", unsafe_allow_html=True)
-
-    # ── Team Form card ────────────────────────────────────────────────────────
-    def _dots(form):
-        if not form:
-            return '<span style="color:#94a3b8;font-size:0.8rem;">No data</span>'
-        cls = {"W": "dot-w", "D": "dot-d", "L": "dot-l"}
-        return "".join(f'<span class="dot {cls[r]}">{r}</span>' for r in form)
-
-    st.markdown(f"""
-    <div class="wc-card anim-fade-up anim-d4">
-        <span class="wc-card-label">📈 Recent Form — Last 5 Matches</span>
-        <div class="form-section">
-            <div class="form-team-row">
-                <span class="form-team-label">{home_team}</span>
-                <div class="form-dots">{_dots(home_form)}</div>
-            </div>
-            <div class="form-team-row">
-                <span class="form-team-label">{away_team}</span>
-                <div class="form-dots">{_dots(away_form)}</div>
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
-
-    # ── Key Players card ──────────────────────────────────────────────────────
-    def _players_html(team):
-        players = KEY_PLAYERS.get(team, [f"Player {i}" for i in range(1, 6)])
-        return "".join(
-            f'<div class="player-item">'
-            f'<span class="player-num">{i}</span>'
-            f'<span class="player-name">{p}</span>'
-            f'</div>'
-            for i, p in enumerate(players, 1)
-        )
-
-    st.markdown(f"""
-    <div class="wc-card anim-fade-up anim-d5">
-        <span class="wc-card-label">⭐ Key Players</span>
-        <div class="players-grid">
-            <div>
-                <div class="players-col-title">{home_team}</div>
-                {_players_html(home_team)}
-            </div>
-            <div>
-                <div class="players-col-title">{away_team}</div>
-                {_players_html(away_team)}
-            </div>
-        </div>
-    </div>""", unsafe_allow_html=True)
-
-    # ── Match Preview card ────────────────────────────────────────────────────
     preview_text = generate_preview(
         home_team, away_team, h_stats, a_stats,
         h2h_data, p_home, p_draw, p_away, neutral, prediction
     )
 
-    st.markdown(f"""
-    <div class="wc-card anim-fade-up anim-d6">
-        <span class="wc-card-label">📝 Match Preview</span>
-        <div class="preview-box">{preview_text}</div>
-    </div>""", unsafe_allow_html=True)
+    # ── Animated reveal — placeholders created in display order ──────────────
+    ph_flags    = st.empty()
+    ph_winner   = st.empty()
+    ph_probs    = st.empty()
+    ph_insights = st.empty()
+
+    animate_prediction_reveal(ph_flags, ph_winner, ph_probs, ph_insights, {
+        "home_team":      home_team,
+        "away_team":      away_team,
+        "home_flag":      TEAM_LOGOS.get(home_team, ""),
+        "away_flag":      TEAM_LOGOS.get(away_team, ""),
+        "pred_icon_html": pred_icon_html,
+        "winner_line":    winner_line,
+        "p_home":         p_home,
+        "p_draw":         p_draw,
+        "p_away":         p_away,
+        "elo_diff":       elo_diff,
+        "form_diff":      form_diff,
+        "h2h":            h2h,
+        "elo_color":      elo_color,
+        "form_color":     form_color,
+        "adv_text":       adv_text,
+        "adv_color":      adv_color,
+        "h2h_data":       h2h_data,
+        "home_form":      home_form,
+        "away_form":      away_form,
+        "preview_text":   preview_text,
+    })
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 
