@@ -156,6 +156,23 @@ KEY_PLAYERS: dict[str, list[str]] = {
 }
 
 
+# Official group draw — December 5 2024, Kaseya Center, Miami
+GROUPS: dict[str, list[str]] = {
+    "Group A": ["United States", "Panama", "Algeria", "Morocco"],
+    "Group B": ["Mexico", "Ecuador", "New Zealand", "Senegal"],
+    "Group C": ["Canada", "Colombia", "Croatia", "Côte d'Ivoire"],
+    "Group D": ["Germany", "Austria", "Japan", "Paraguay"],
+    "Group E": ["France", "Switzerland", "Saudi Arabia", "Uzbekistan"],
+    "Group F": ["Spain", "Portugal", "South Korea", "Uruguay"],
+    "Group G": ["England", "Scotland", "Iran", "Haiti"],
+    "Group H": ["Brazil", "Norway", "Australia", "South Africa"],
+    "Group I": ["Argentina", "Netherlands", "Ghana", "Iraq"],
+    "Group J": ["Czechia", "Jordan", "Egypt", "Türkiye"],
+    "Group K": ["Belgium", "Bosnia and Herzegovina", "Qatar", "Curaçao"],
+    "Group L": ["Sweden", "Tunisia", "DR Congo", "Cabo Verde"],
+}
+
+
 # ── Model logic (unchanged) ───────────────────────────────────────────────────
 
 @st.cache_resource
@@ -315,6 +332,26 @@ def generate_preview(home_team, away_team, h_stats, a_stats, h2h_data,
     return (
         f"On {venue}, {outcome_phrase} with {conf:.0%} model confidence. "
         f"{elo_line}{form_line}{h2h_line}"
+    )
+
+
+def _group_card_html(group_name: str, teams: list[str]) -> str:
+    letter = group_name.split()[-1]
+    rows = ""
+    for team in teams:
+        flag = TEAM_LOGOS.get(team, "")
+        flag_img = f'<img src="{flag}" class="group-flag" />' if flag else ""
+        rows += (
+            f'<div class="group-team">'
+            f'{flag_img}'
+            f'<span class="group-team-name">{team}</span>'
+            f'</div>'
+        )
+    return (
+        f'<div class="group-card">'
+        f'<div class="group-header">Group {letter}</div>'
+        f'{rows}'
+        f'</div>'
     )
 
 
@@ -851,6 +888,46 @@ hr { border: none !important; border-top: 1px solid #e4eaf3 !important; margin: 
     margin-top: 0.25rem;
 }
 
+/* ═══════════════════════ WORLD CUP GROUPS ═══════════════════════ */
+[data-testid="stExpander"] {
+    border: 1px solid var(--border) !important;
+    border-radius: 20px !important;
+    background: var(--card) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 30px rgba(0,0,0,0.07) !important;
+    overflow: hidden;
+}
+[data-testid="stExpander"] summary {
+    font-size: 0.9rem !important; font-weight: 700 !important;
+    color: #1e293b !important; padding: 1rem 1.5rem !important;
+}
+[data-testid="stExpander"] summary:hover { background: #f8fafc !important; }
+[data-testid="stExpander"] > div:last-child {
+    padding: 0 1rem 1rem !important;
+}
+.group-card {
+    background: linear-gradient(160deg, #f8fafc, #f1f5f9);
+    border-radius: 16px; padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 14px rgba(0,0,0,0.04);
+    margin-bottom: 0.75rem;
+}
+.group-header {
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--red);
+    padding-bottom: 0.55rem; margin-bottom: 0.55rem;
+    border-bottom: 1px solid #dde3ef;
+}
+.group-team {
+    display: flex; align-items: center; gap: 0.55rem;
+    padding: 0.38rem 0; border-bottom: 1px solid rgba(221,227,239,0.5);
+}
+.group-team:last-child { border-bottom: none; }
+.group-flag {
+    width: 24px; height: auto; border-radius: 3px; flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+.group-team-name { font-size: 0.84rem; font-weight: 600; color: #1e293b; }
+
 /* ═══════════════════════ REVEAL ANIMATION ═══════════════════════ */
 @keyframes slideFromLeft  { from { opacity:0; transform:translateX(-52px); } to { opacity:1; transform:translateX(0); } }
 @keyframes slideFromRight { from { opacity:0; transform:translateX( 52px); } to { opacity:1; transform:translateX(0); } }
@@ -915,6 +992,18 @@ if not DATA_PATH.exists():
 pipeline   = load_model()
 df         = load_data()
 team_stats = build_team_stats(df)
+
+# ── World Cup Groups ──────────────────────────────────────────────────────────
+
+with st.expander("🌍  2026 World Cup Groups", expanded=False):
+    group_items = list(GROUPS.items())
+    for row_start in range(0, len(group_items), 2):
+        col_left, col_right = st.columns(2, gap="medium")
+        name, teams = group_items[row_start]
+        col_left.markdown(_group_card_html(name, teams), unsafe_allow_html=True)
+        if row_start + 1 < len(group_items):
+            name, teams = group_items[row_start + 1]
+            col_right.markdown(_group_card_html(name, teams), unsafe_allow_html=True)
 
 # ── Team Selection Card ───────────────────────────────────────────────────────
 
