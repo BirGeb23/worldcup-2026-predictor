@@ -383,11 +383,9 @@ def nation_picker_modal(team_key: str) -> None:
                     f'</div>',
                     unsafe_allow_html=True,
                 )
-                st.markdown('<div class="modal-flag-btn">', unsafe_allow_html=True)
                 if st.button(team, key=f"pick_{team_key}_{team}", use_container_width=True):
                     st.session_state[team_key] = team
                     st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
 
 
 def animate_prediction_reveal(
@@ -1146,10 +1144,8 @@ c_home, c_vs, c_away = st.columns([10, 3, 10])
 with c_home:
     home_team = st.session_state["home_team"]
     home_flag = TEAM_LOGOS.get(home_team, "")
-    h_elo_val = team_stats.get(home_team, {}).get("elo", 1500)
 
     # ── Custom flag dropdown (popover with flag+name list) ────────────────
-    st.markdown('<div class="flag-popover-row">', unsafe_allow_html=True)
     with st.popover(f"🏠  {home_team}  ▾", use_container_width=True):
         q_home = st.text_input(
             "search", placeholder="Search nations…",
@@ -1176,21 +1172,17 @@ with c_home:
                     st.session_state["home_team"] = t
                     st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Team crest display ────────────────────────────────────────────────
     st.markdown(f"""
     <div class="team-crest">
         <img src="{home_flag}" alt="{home_team}" />
         <div class="crest-name">{home_team}</div>
-        <div class="crest-elo">ELO {h_elo_val:.0f}</div>
     </div>""", unsafe_allow_html=True)
 
     # ── Browse all nations → opens flag grid modal ────────────────────────
-    st.markdown('<div class="team-sel-btn">', unsafe_allow_html=True)
     if st.button("🔍  Browse all nations", key="browse_home", use_container_width=True):
         nation_picker_modal("home_team")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with c_vs:
     st.markdown("""
@@ -1203,10 +1195,8 @@ with c_vs:
 with c_away:
     away_team = st.session_state["away_team"]
     away_flag = TEAM_LOGOS.get(away_team, "")
-    a_elo_val = team_stats.get(away_team, {}).get("elo", 1500)
 
     # ── Custom flag dropdown (popover with flag+name list) ────────────────
-    st.markdown('<div class="flag-popover-row">', unsafe_allow_html=True)
     with st.popover(f"✈️  {away_team}  ▾", use_container_width=True):
         q_away = st.text_input(
             "search", placeholder="Search nations…",
@@ -1233,21 +1223,17 @@ with c_away:
                     st.session_state["away_team"] = t
                     st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Team crest display ────────────────────────────────────────────────
     st.markdown(f"""
     <div class="team-crest">
         <img src="{away_flag}" alt="{away_team}" />
         <div class="crest-name">{away_team}</div>
-        <div class="crest-elo">ELO {a_elo_val:.0f}</div>
     </div>""", unsafe_allow_html=True)
 
     # ── Browse all nations → opens flag grid modal ────────────────────────
-    st.markdown('<div class="team-sel-btn">', unsafe_allow_html=True)
     if st.button("🔍  Browse all nations", key="browse_away", use_container_width=True):
         nation_picker_modal("away_team")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<hr style="margin:1.25rem 0 0.85rem;">', unsafe_allow_html=True)
 neutral = st.toggle("🌐 Neutral Venue", value=True)
@@ -1338,12 +1324,3 @@ if predict:
         "preview_text":   preview_text,
     })
 
-# ── Footer ────────────────────────────────────────────────────────────────────
-
-st.markdown("""
-<div style="text-align:center; padding:2rem 0 0.5rem; border-top:1px solid #e4eaf3; margin-top:1rem;
-            color:#94a3b8; font-size:0.8rem; font-weight:500; letter-spacing:0.03em;">
-    Made by <strong style="color:#475569;">Biruk</strong>
-    &nbsp;·&nbsp; 2026 World Cup Edition &nbsp;·&nbsp; Version 1.0
-</div>
-""", unsafe_allow_html=True)
