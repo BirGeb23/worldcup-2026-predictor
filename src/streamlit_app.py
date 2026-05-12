@@ -158,18 +158,18 @@ KEY_PLAYERS: dict[str, list[str]] = {
 
 # Official group draw — December 5 2024, Kaseya Center, Miami
 GROUPS: dict[str, list[str]] = {
-    "Group A": ["United States", "Panama", "Algeria", "Morocco"],
-    "Group B": ["Mexico", "Ecuador", "New Zealand", "Senegal"],
-    "Group C": ["Canada", "Colombia", "Croatia", "Côte d'Ivoire"],
-    "Group D": ["Germany", "Austria", "Japan", "Paraguay"],
-    "Group E": ["France", "Switzerland", "Saudi Arabia", "Uzbekistan"],
-    "Group F": ["Spain", "Portugal", "South Korea", "Uruguay"],
-    "Group G": ["England", "Scotland", "Iran", "Haiti"],
-    "Group H": ["Brazil", "Norway", "Australia", "South Africa"],
-    "Group I": ["Argentina", "Netherlands", "Ghana", "Iraq"],
-    "Group J": ["Czechia", "Jordan", "Egypt", "Türkiye"],
-    "Group K": ["Belgium", "Bosnia and Herzegovina", "Qatar", "Curaçao"],
-    "Group L": ["Sweden", "Tunisia", "DR Congo", "Cabo Verde"],
+    "Group A": ["Mexico", "South Africa", "South Korea", "Czechia"],
+    "Group B": ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+    "Group C": ["Brazil", "Morocco", "Haiti", "Scotland"],
+    "Group D": ["United States", "Paraguay", "Australia", "Türkiye"],
+    "Group E": ["Germany", "Curaçao", "Côte d'Ivoire", "Ecuador"],
+    "Group F": ["Netherlands", "Japan", "Sweden", "Tunisia"],
+    "Group G": ["Belgium", "Egypt", "Iran", "New Zealand"],
+    "Group H": ["Spain", "Cabo Verde", "Saudi Arabia", "Uruguay"],
+    "Group I": ["France", "Senegal", "Iraq", "Norway"],
+    "Group J": ["Argentina", "Algeria", "Austria", "Jordan"],
+    "Group K": ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
+    "Group L": ["England", "Croatia", "Ghana", "Panama"],
 }
 
 
