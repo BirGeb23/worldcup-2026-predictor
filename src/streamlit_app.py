@@ -355,6 +355,41 @@ def _group_card_html(group_name: str, teams: list[str]) -> str:
     )
 
 
+@st.dialog("🌍  Select a Nation", width="large")
+def nation_picker_modal(team_key: str) -> None:
+    """Flag-grid nation picker. Sets session_state[team_key] and reruns."""
+    query = st.text_input(
+        "search", placeholder="Search nations…",
+        label_visibility="collapsed", key=f"modal_search_{team_key}",
+    )
+    teams = (
+        [t for t in QUALIFIED_2026 if query.lower() in t.lower()]
+        if query else QUALIFIED_2026
+    )
+    if not teams:
+        st.caption("No nations match your search.")
+        return
+    current = st.session_state.get(team_key, "")
+    for i in range(0, len(teams), 4):
+        chunk = teams[i:i+4]
+        cols = st.columns(4, gap="small")
+        for j, team in enumerate(chunk):
+            flag_url = TEAM_LOGOS.get(team, "")
+            sel_cls = " modal-flag-selected" if team == current else ""
+            with cols[j]:
+                st.markdown(
+                    f'<div class="modal-flag-cell{sel_cls}">'
+                    f'<img src="{flag_url}" class="modal-flag-img" />'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown('<div class="modal-flag-btn">', unsafe_allow_html=True)
+                if st.button(team, key=f"pick_{team_key}_{team}", use_container_width=True):
+                    st.session_state[team_key] = team
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+
 def animate_prediction_reveal(
     ph_flags, ph_winner, ph_probs, ph_insights, ctx: dict
 ) -> None:
@@ -948,6 +983,95 @@ hr { border: none !important; border-top: 1px solid #e4eaf3 !important; margin: 
 .reveal-flag-home { animation: slideFromLeft  0.5s cubic-bezier(0.22,1,0.36,1) both; }
 .reveal-flag-away { animation: slideFromRight 0.5s cubic-bezier(0.22,1,0.36,1) both; }
 .reveal-vs-badge  { animation: fadeInUp 0.4s cubic-bezier(0.22,1,0.36,1) 0.15s both; }
+
+/* ═══════════════════════ CUSTOM FLAG DROPDOWN ═══════════════════════ */
+.flag-dropdown-trigger {
+    display: flex; align-items: center; gap: 0.7rem;
+    background: #ffffff; border: 1.5px solid #dde3ef; border-radius: 12px;
+    padding: 0.58rem 0.9rem; margin-bottom: 0.4rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    pointer-events: none;
+}
+.dd-flag  { width: 28px; height: auto; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.18); flex-shrink:0; }
+.dd-name  { flex: 1; font-size: 0.88rem; font-weight: 700; color: #1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dd-arrow { font-size: 0.7rem; color: #94a3b8; flex-shrink:0; }
+
+.team-sel-btn .stButton button {
+    background: linear-gradient(135deg, #f8fafc, #edf0f7) !important;
+    color: #475569 !important;
+    border: 1.5px solid #dde3ef !important;
+    border-radius: 10px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.82rem !important; font-weight: 600 !important;
+    text-transform: none !important; letter-spacing: 0 !important;
+    box-shadow: none !important; padding: 0.45rem !important;
+}
+.team-sel-btn .stButton button:hover {
+    border-color: var(--red) !important; color: var(--red) !important;
+    background: #fff5f5 !important;
+}
+
+/* popover trigger row inside selector */
+.flag-popover-row { margin-bottom: 0.1rem; }
+.flag-popover-row [data-testid="stPopover"] button {
+    background: #ffffff !important; border: 1.5px solid #dde3ef !important;
+    border-radius: 12px !important; padding: 0.55rem 0.9rem !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.88rem !important; font-weight: 700 !important;
+    color: #1e293b !important; text-transform: none !important;
+    letter-spacing: 0 !important; box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+    width: 100% !important;
+}
+.flag-popover-row [data-testid="stPopover"] button:hover {
+    border-color: var(--red) !important; color: var(--red) !important;
+}
+/* list items inside popover */
+.pop-list-item .stButton button {
+    background: transparent !important; border: none !important;
+    border-radius: 8px !important; color: #1e293b !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.84rem !important; font-weight: 600 !important;
+    text-transform: none !important; letter-spacing: 0 !important;
+    box-shadow: none !important; padding: 0.3rem 0.5rem !important;
+    text-align: left !important;
+}
+.pop-list-item .stButton button:hover {
+    background: #f8fafc !important; color: var(--red) !important;
+}
+.pop-list-item-selected .stButton button {
+    background: rgba(232,17,45,0.07) !important; color: var(--red) !important;
+    font-weight: 800 !important;
+}
+
+/* ═══════════════════════ NATION PICKER MODAL ═══════════════════════ */
+.modal-flag-cell {
+    background: linear-gradient(160deg, #f8fafc, #f1f5f9);
+    border-radius: 12px; padding: 0.7rem 0.4rem 0.4rem;
+    text-align: center; border: 1.5px solid transparent;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    margin-bottom: 0.15rem;
+}
+.modal-flag-selected {
+    border-color: var(--red) !important;
+    box-shadow: 0 0 0 3px rgba(232,17,45,0.12) !important;
+}
+.modal-flag-img {
+    width: 100%; max-width: 62px; height: auto;
+    border-radius: 6px; box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+}
+.modal-flag-btn .stButton button {
+    background: white !important; color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important; border-radius: 7px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.7rem !important; font-weight: 700 !important;
+    text-transform: none !important; letter-spacing: 0 !important;
+    box-shadow: none !important; padding: 0.25rem 0.15rem !important;
+    line-height: 1.2 !important;
+}
+.modal-flag-btn .stButton button:hover {
+    border-color: var(--red) !important; color: var(--red) !important;
+    background: #fff5f5 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -993,6 +1117,13 @@ pipeline   = load_model()
 df         = load_data()
 team_stats = build_team_stats(df)
 
+# ── Session State ─────────────────────────────────────────────────────────────
+
+if "home_team" not in st.session_state:
+    st.session_state["home_team"] = "Brazil"
+if "away_team" not in st.session_state:
+    st.session_state["away_team"] = "Argentina"
+
 # ── World Cup Groups ──────────────────────────────────────────────────────────
 
 with st.expander("🌍  2026 World Cup Groups", expanded=False):
@@ -1013,15 +1144,53 @@ st.markdown('<span class="wc-card-label">⚽ Select Teams</span>', unsafe_allow_
 c_home, c_vs, c_away = st.columns([10, 3, 10])
 
 with c_home:
-    home_team = st.selectbox("🏠 Home Team", QUALIFIED_2026,
-                             index=QUALIFIED_2026.index("Brazil") if "Brazil" in QUALIFIED_2026 else 0)
-    h_elo_val = team_stats.get(home_team, {}).get("elo", 1500)
+    home_team = st.session_state["home_team"]
     home_flag = TEAM_LOGOS.get(home_team, "")
+    h_elo_val = team_stats.get(home_team, {}).get("elo", 1500)
+
+    # ── Custom flag dropdown (popover with flag+name list) ────────────────
+    st.markdown('<div class="flag-popover-row">', unsafe_allow_html=True)
+    with st.popover(f"🏠  {home_team}  ▾", use_container_width=True):
+        q_home = st.text_input(
+            "search", placeholder="Search nations…",
+            label_visibility="collapsed", key="pop_q_home",
+        )
+        opts_home = (
+            [t for t in QUALIFIED_2026 if q_home.lower() in t.lower()]
+            if q_home else QUALIFIED_2026
+        )
+        for t in opts_home:
+            fu = TEAM_LOGOS.get(t, "")
+            is_sel = t == home_team
+            item_cls = "pop-list-item-selected" if is_sel else "pop-list-item"
+            pc1, pc2 = st.columns([1, 5], gap="small")
+            with pc1:
+                st.markdown(
+                    f'<img src="{fu}" style="width:26px;border-radius:3px;'
+                    f'margin-top:5px;box-shadow:0 1px 4px rgba(0,0,0,0.20);">',
+                    unsafe_allow_html=True,
+                )
+            with pc2:
+                st.markdown(f'<div class="{item_cls}">', unsafe_allow_html=True)
+                if st.button(t, key=f"pop_home_{t}", use_container_width=True):
+                    st.session_state["home_team"] = t
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── Team crest display ────────────────────────────────────────────────
     st.markdown(f"""
     <div class="team-crest">
         <img src="{home_flag}" alt="{home_team}" />
         <div class="crest-name">{home_team}</div>
+        <div class="crest-elo">ELO {h_elo_val:.0f}</div>
     </div>""", unsafe_allow_html=True)
+
+    # ── Browse all nations → opens flag grid modal ────────────────────────
+    st.markdown('<div class="team-sel-btn">', unsafe_allow_html=True)
+    if st.button("🔍  Browse all nations", key="browse_home", use_container_width=True):
+        nation_picker_modal("home_team")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with c_vs:
     st.markdown("""
@@ -1032,15 +1201,53 @@ with c_vs:
     </div>""", unsafe_allow_html=True)
 
 with c_away:
-    away_team = st.selectbox("✈️ Away Team", QUALIFIED_2026,
-                             index=QUALIFIED_2026.index("Argentina") if "Argentina" in QUALIFIED_2026 else 1)
-    a_elo_val = team_stats.get(away_team, {}).get("elo", 1500)
+    away_team = st.session_state["away_team"]
     away_flag = TEAM_LOGOS.get(away_team, "")
+    a_elo_val = team_stats.get(away_team, {}).get("elo", 1500)
+
+    # ── Custom flag dropdown (popover with flag+name list) ────────────────
+    st.markdown('<div class="flag-popover-row">', unsafe_allow_html=True)
+    with st.popover(f"✈️  {away_team}  ▾", use_container_width=True):
+        q_away = st.text_input(
+            "search", placeholder="Search nations…",
+            label_visibility="collapsed", key="pop_q_away",
+        )
+        opts_away = (
+            [t for t in QUALIFIED_2026 if q_away.lower() in t.lower()]
+            if q_away else QUALIFIED_2026
+        )
+        for t in opts_away:
+            fu = TEAM_LOGOS.get(t, "")
+            is_sel = t == away_team
+            item_cls = "pop-list-item-selected" if is_sel else "pop-list-item"
+            pc1, pc2 = st.columns([1, 5], gap="small")
+            with pc1:
+                st.markdown(
+                    f'<img src="{fu}" style="width:26px;border-radius:3px;'
+                    f'margin-top:5px;box-shadow:0 1px 4px rgba(0,0,0,0.20);">',
+                    unsafe_allow_html=True,
+                )
+            with pc2:
+                st.markdown(f'<div class="{item_cls}">', unsafe_allow_html=True)
+                if st.button(t, key=f"pop_away_{t}", use_container_width=True):
+                    st.session_state["away_team"] = t
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── Team crest display ────────────────────────────────────────────────
     st.markdown(f"""
     <div class="team-crest">
         <img src="{away_flag}" alt="{away_team}" />
         <div class="crest-name">{away_team}</div>
+        <div class="crest-elo">ELO {a_elo_val:.0f}</div>
     </div>""", unsafe_allow_html=True)
+
+    # ── Browse all nations → opens flag grid modal ────────────────────────
+    st.markdown('<div class="team-sel-btn">', unsafe_allow_html=True)
+    if st.button("🔍  Browse all nations", key="browse_away", use_container_width=True):
+        nation_picker_modal("away_team")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<hr style="margin:1.25rem 0 0.85rem;">', unsafe_allow_html=True)
 neutral = st.toggle("🌐 Neutral Venue", value=True)
