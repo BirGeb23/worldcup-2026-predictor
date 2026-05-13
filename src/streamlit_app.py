@@ -764,7 +764,7 @@ html, body, [class*="css"] {
     background: #f8fafc !important;
     font-family: 'Inter', sans-serif !important; font-weight: 600 !important;
 }
-.stToggle > label { font-weight: 500 !important; color: #475569 !important; }
+.stToggle > label { font-weight: 600 !important; color: #1e293b !important; }
 
 hr { border: none !important; border-top: 1px solid #e4eaf3 !important; margin: 1rem 0 !important; }
 
@@ -1136,7 +1136,6 @@ with st.expander("🌍  2026 World Cup Groups", expanded=False):
 
 # ── Team Selection Card ───────────────────────────────────────────────────────
 
-st.markdown('<div class="wc-card">', unsafe_allow_html=True)
 st.markdown('<span class="wc-card-label">⚽ Select Teams</span>', unsafe_allow_html=True)
 
 c_home, c_vs, c_away = st.columns([10, 3, 10])
@@ -1239,7 +1238,6 @@ st.markdown('<hr style="margin:1.25rem 0 0.85rem;">', unsafe_allow_html=True)
 neutral = st.toggle("🌐 Neutral Venue", value=True)
 st.markdown(f'<p style="font-size:0.75rem;color:#94a3b8;margin:0.2rem 0 0;">Tournament: {TOURNAMENT}</p>',
             unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
 
 if home_team == away_team:
     st.warning("Home and away teams must be different.")
@@ -1324,3 +1322,11 @@ if predict:
         "preview_text":   preview_text,
     })
 
+# ── Footer ────────────────────────────────────────────────────────────────────
+
+st.markdown("""
+<div style="text-align:center; padding:2rem 0 0.5rem; border-top:1px solid #e4eaf3; margin-top:1rem;
+            color:#94a3b8; font-size:0.8rem; font-weight:500; letter-spacing:0.03em;">
+    2026 World Cup Edition &nbsp;·&nbsp; Version 1.0
+</div>
+""", unsafe_allow_html=True)
