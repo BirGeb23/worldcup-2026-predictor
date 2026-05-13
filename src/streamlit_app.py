@@ -753,6 +753,14 @@ html, body, [class*="css"] {
 }
 .stButton > button[kind="primary"]:active { transform: translateY(0) !important; }
 
+/* ═══════════════════════ TEAM SLOT LABELS ═══════════════════════ */
+.team-slot-label {
+    font-size: 0.65rem; font-weight: 800;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: #64748b; text-align: center;
+    margin: 0 0 0.45rem; line-height: 1;
+}
+
 /* ═══════════════════════ SELECTBOX / TOGGLE ═══════════════════════ */
 .stSelectbox > label {
     font-size: 0.72rem !important; font-weight: 700 !important;
@@ -1144,33 +1152,7 @@ with c_home:
     home_team = st.session_state["home_team"]
     home_flag = TEAM_LOGOS.get(home_team, "")
 
-    # ── Custom flag dropdown (popover with flag+name list) ────────────────
-    with st.popover(f"🏠  {home_team}  ▾", use_container_width=True):
-        q_home = st.text_input(
-            "search", placeholder="Search nations…",
-            label_visibility="collapsed", key="pop_q_home",
-        )
-        opts_home = (
-            [t for t in QUALIFIED_2026 if q_home.lower() in t.lower()]
-            if q_home else QUALIFIED_2026
-        )
-        for t in opts_home:
-            fu = TEAM_LOGOS.get(t, "")
-            is_sel = t == home_team
-            item_cls = "pop-list-item-selected" if is_sel else "pop-list-item"
-            pc1, pc2 = st.columns([1, 5], gap="small")
-            with pc1:
-                st.markdown(
-                    f'<img src="{fu}" style="width:26px;border-radius:3px;'
-                    f'margin-top:5px;box-shadow:0 1px 4px rgba(0,0,0,0.20);">',
-                    unsafe_allow_html=True,
-                )
-            with pc2:
-                st.markdown(f'<div class="{item_cls}">', unsafe_allow_html=True)
-                if st.button(t, key=f"pop_home_{t}", use_container_width=True):
-                    st.session_state["home_team"] = t
-                    st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<p class="team-slot-label">HOME</p>', unsafe_allow_html=True)
 
     # ── Team crest display ────────────────────────────────────────────────
     st.markdown(f"""
@@ -1195,33 +1177,7 @@ with c_away:
     away_team = st.session_state["away_team"]
     away_flag = TEAM_LOGOS.get(away_team, "")
 
-    # ── Custom flag dropdown (popover with flag+name list) ────────────────
-    with st.popover(f"✈️  {away_team}  ▾", use_container_width=True):
-        q_away = st.text_input(
-            "search", placeholder="Search nations…",
-            label_visibility="collapsed", key="pop_q_away",
-        )
-        opts_away = (
-            [t for t in QUALIFIED_2026 if q_away.lower() in t.lower()]
-            if q_away else QUALIFIED_2026
-        )
-        for t in opts_away:
-            fu = TEAM_LOGOS.get(t, "")
-            is_sel = t == away_team
-            item_cls = "pop-list-item-selected" if is_sel else "pop-list-item"
-            pc1, pc2 = st.columns([1, 5], gap="small")
-            with pc1:
-                st.markdown(
-                    f'<img src="{fu}" style="width:26px;border-radius:3px;'
-                    f'margin-top:5px;box-shadow:0 1px 4px rgba(0,0,0,0.20);">',
-                    unsafe_allow_html=True,
-                )
-            with pc2:
-                st.markdown(f'<div class="{item_cls}">', unsafe_allow_html=True)
-                if st.button(t, key=f"pop_away_{t}", use_container_width=True):
-                    st.session_state["away_team"] = t
-                    st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<p class="team-slot-label">AWAY</p>', unsafe_allow_html=True)
 
     # ── Team crest display ────────────────────────────────────────────────
     st.markdown(f"""
