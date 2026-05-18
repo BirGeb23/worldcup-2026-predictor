@@ -370,21 +370,30 @@ def nation_picker_modal(team_key: str) -> None:
     if not teams:
         st.caption("No nations match your search.")
         return
+
     current = st.session_state.get(team_key, "")
+
     for i in range(0, len(teams), 4):
         chunk = teams[i:i+4]
         cols = st.columns(4, gap="small")
         for j, team in enumerate(chunk):
             flag_url = TEAM_LOGOS.get(team, "")
-            sel_cls = " modal-flag-selected" if team == current else ""
             with cols[j]:
+                # Flag at fixed 80 × 54 px — consistent across all nations
                 st.markdown(
-                    f'<div class="modal-flag-cell{sel_cls}">'
-                    f'<img src="{flag_url}" class="modal-flag-img" />'
-                    f'</div>',
+                    f'<img src="{flag_url}" '
+                    f'style="width:80px;height:54px;object-fit:cover;'
+                    f'border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.22);'
+                    f'display:block;margin:0 auto 4px;">',
                     unsafe_allow_html=True,
                 )
-                if st.button(team, key=f"pick_{team_key}_{team}", use_container_width=True):
+                # One button per nation — primary highlights current selection
+                if st.button(
+                    team,
+                    key=f"nation_{team_key}_{team}",
+                    use_container_width=True,
+                    type="primary" if team == current else "secondary",
+                ):
                     st.session_state[team_key] = team
                     st.rerun()
 
