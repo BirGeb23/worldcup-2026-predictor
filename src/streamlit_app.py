@@ -1,6 +1,7 @@
 import base64
 import pickle
 import time
+from datetime import datetime, timezone
 import pandas as pd
 import streamlit as st
 from pathlib import Path
@@ -582,6 +583,9 @@ def animate_prediction_reveal(
 
 st.set_page_config(page_title="2026 World Cup Predictor", page_icon="🏆", layout="centered")
 
+# Placeholder created first so it renders above every other element
+cd_placeholder = st.empty()
+
 # ── Global CSS ────────────────────────────────────────────────────────────────
 
 st.markdown("""
@@ -752,6 +756,39 @@ html, body, [class*="css"] {
     box-shadow: 0 8px 30px rgba(232,17,45,0.48) !important;
 }
 .stButton > button[kind="primary"]:active { transform: translateY(0) !important; }
+
+/* ═══════════════════════ COUNTDOWN BAR ═══════════════════════ */
+.countdown-bar {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 1rem;
+    background: linear-gradient(135deg, #06090f 0%, #0d1424 100%);
+    border: 1px solid rgba(232,17,45,0.22);
+    border-radius: 16px; padding: 0.9rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 12px rgba(6,9,15,0.18);
+}
+.cd-label {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(255,255,255,0.45);
+    white-space: nowrap;
+}
+.cd-units {
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.cd-unit  { display: flex; flex-direction: column; align-items: center; min-width: 42px; }
+.cd-num   {
+    font-size: 1.55rem; font-weight: 900; color: #ffffff;
+    line-height: 1; letter-spacing: -0.02em;
+}
+.cd-name  {
+    font-size: 0.55rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(255,255,255,0.38);
+    margin-top: 0.12rem;
+}
+.cd-sep   {
+    font-size: 1.3rem; font-weight: 900; color: var(--red);
+    line-height: 1; margin-bottom: 0.6rem; align-self: flex-start; padding-top: 0.1rem;
+}
 
 /* ═══════════════════════ TEAM SLOT LABELS ═══════════════════════ */
 .team-slot-label {
@@ -1286,3 +1323,39 @@ st.markdown("""
     2026 World Cup Edition &nbsp;·&nbsp; Version 1.0
 </div>
 """, unsafe_allow_html=True)
+
+# ── Live countdown — runs after all UI is rendered, ticks every second ────────
+
+_KICKOFF = datetime(2026, 6, 11, 18, 0, 0, tzinfo=timezone.utc)
+
+def _cd_html() -> str:
+    delta = _KICKOFF - datetime.now(tz=timezone.utc)
+    if delta.total_seconds() <= 0:
+        return (
+            '<div class="countdown-bar">'
+            '<span class="cd-label">⚽ The 2026 FIFA World Cup has begun!</span>'
+            '</div>'
+        )
+    total  = int(delta.total_seconds())
+    days   = delta.days
+    hours  = (total % 86400) // 3600
+    mins   = (total % 3600)  // 60
+    secs   = total % 60
+    return (
+        '<div class="countdown-bar">'
+        '<span class="cd-label">World Cup kicks off in</span>'
+        '<div class="cd-units">'
+        f'<div class="cd-unit"><span class="cd-num">{days}</span><span class="cd-name">days</span></div>'
+        '<div class="cd-sep">·</div>'
+        f'<div class="cd-unit"><span class="cd-num">{hours:02d}</span><span class="cd-name">hours</span></div>'
+        '<div class="cd-sep">·</div>'
+        f'<div class="cd-unit"><span class="cd-num">{mins:02d}</span><span class="cd-name">minutes</span></div>'
+        '<div class="cd-sep">·</div>'
+        f'<div class="cd-unit"><span class="cd-num">{secs:02d}</span><span class="cd-name">seconds</span></div>'
+        '</div>'
+        '</div>'
+    )
+
+while True:
+    cd_placeholder.markdown(_cd_html(), unsafe_allow_html=True)
+    time.sleep(1)
