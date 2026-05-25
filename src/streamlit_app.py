@@ -358,7 +358,44 @@ def _group_card_html(group_name: str, teams: list[str]) -> str:
 
 @st.dialog("🌍  Select a Nation", width="large")
 def nation_picker_modal(team_key: str) -> None:
-    """Flag-grid nation picker. Sets session_state[team_key] and reruns."""
+    st.markdown("""
+    <style>
+    /* Flag image block sits above the button; merge them visually */
+    .nation-flag-wrap {
+        text-align: center;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        padding: 0.55rem 0.4rem 0.3rem;
+    }
+    .nation-flag-wrap img {
+        width: 80px; height: 54px;
+        object-fit: cover;
+        border-radius: 4px;
+        display: block;
+        margin: 0 auto;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    }
+    /* Pull the button up so it touches the flag div */
+    [data-testid="stMarkdownContainer"]:has(.nation-flag-wrap) {
+        margin-bottom: -8px !important;
+    }
+    /* Round only the bottom corners of the button */
+    [data-testid="stMarkdownContainer"]:has(.nation-flag-wrap)
+      + [data-testid="stButton"] button {
+        border-radius: 0 0 12px 12px !important;
+        border-top: none !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+        white-space: normal !important;
+        line-height: 1.3 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     query = st.text_input(
         "search", placeholder="Search nations…",
         label_visibility="collapsed", key=f"modal_search_{team_key}",
@@ -377,17 +414,14 @@ def nation_picker_modal(team_key: str) -> None:
         chunk = teams[i:i+4]
         cols = st.columns(4, gap="small")
         for j, team in enumerate(chunk):
-            flag_url = TEAM_LOGOS.get(team, "")
             with cols[j]:
-                # Flag at fixed 80 × 54 px — consistent across all nations
+                flag_url = TEAM_LOGOS.get(team, "")
                 st.markdown(
-                    f'<img src="{flag_url}" '
-                    f'style="width:80px;height:54px;object-fit:cover;'
-                    f'border-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.22);'
-                    f'display:block;margin:0 auto 4px;">',
+                    f'<div class="nation-flag-wrap">'
+                    f'<img src="{flag_url}" alt="{team}" />'
+                    f'</div>',
                     unsafe_allow_html=True,
                 )
-                # One button per nation — primary highlights current selection
                 if st.button(
                     team,
                     key=f"nation_{team_key}_{team}",
@@ -590,10 +624,43 @@ def animate_prediction_reveal(
 
 # ── Page config ───────────────────────────────────────────────────────────────
 
+_KICKOFF = datetime(2026, 6, 11, 18, 0, 0, tzinfo=timezone.utc)
+
+def _cd_html() -> str:
+    delta = _KICKOFF - datetime.now(tz=timezone.utc)
+    if delta.total_seconds() <= 0:
+        return (
+            '<div class="countdown-bar">'
+            '<span class="cd-label">⚽ The 2026 FIFA World Cup has begun!</span>'
+            '</div>'
+        )
+    total  = int(delta.total_seconds())
+    days   = delta.days
+    hours  = (total % 86400) // 3600
+    mins   = (total % 3600)  // 60
+    secs   = total % 60
+    return (
+        '<div class="countdown-bar">'
+        '<span class="cd-label">World Cup kicks off in</span>'
+        '<div class="cd-units">'
+        f'<div class="cd-unit"><span class="cd-num">{days}</span><span class="cd-name">days</span></div>'
+        '<div class="cd-sep">·</div>'
+        f'<div class="cd-unit"><span class="cd-num">{hours:02d}</span><span class="cd-name">hours</span></div>'
+        '<div class="cd-sep">·</div>'
+        f'<div class="cd-unit"><span class="cd-num">{mins:02d}</span><span class="cd-name">minutes</span></div>'
+        '<div class="cd-sep">·</div>'
+        f'<div class="cd-unit"><span class="cd-num">{secs:02d}</span><span class="cd-name">seconds</span></div>'
+        '</div>'
+        '</div>'
+    )
+
 st.set_page_config(page_title="2026 World Cup Predictor", page_icon="🏆", layout="centered")
 
-# Placeholder created first so it renders above every other element
-cd_placeholder = st.empty()
+@st.fragment(run_every=1)
+def _live_countdown() -> None:
+    st.markdown(_cd_html(), unsafe_allow_html=True)
+
+_live_countdown()
 
 # ── Global CSS ────────────────────────────────────────────────────────────────
 
@@ -1332,39 +1399,3 @@ st.markdown("""
     2026 World Cup Edition &nbsp;·&nbsp; Version 1.0
 </div>
 """, unsafe_allow_html=True)
-
-# ── Live countdown — runs after all UI is rendered, ticks every second ────────
-
-_KICKOFF = datetime(2026, 6, 11, 18, 0, 0, tzinfo=timezone.utc)
-
-def _cd_html() -> str:
-    delta = _KICKOFF - datetime.now(tz=timezone.utc)
-    if delta.total_seconds() <= 0:
-        return (
-            '<div class="countdown-bar">'
-            '<span class="cd-label">⚽ The 2026 FIFA World Cup has begun!</span>'
-            '</div>'
-        )
-    total  = int(delta.total_seconds())
-    days   = delta.days
-    hours  = (total % 86400) // 3600
-    mins   = (total % 3600)  // 60
-    secs   = total % 60
-    return (
-        '<div class="countdown-bar">'
-        '<span class="cd-label">World Cup kicks off in</span>'
-        '<div class="cd-units">'
-        f'<div class="cd-unit"><span class="cd-num">{days}</span><span class="cd-name">days</span></div>'
-        '<div class="cd-sep">·</div>'
-        f'<div class="cd-unit"><span class="cd-num">{hours:02d}</span><span class="cd-name">hours</span></div>'
-        '<div class="cd-sep">·</div>'
-        f'<div class="cd-unit"><span class="cd-num">{mins:02d}</span><span class="cd-name">minutes</span></div>'
-        '<div class="cd-sep">·</div>'
-        f'<div class="cd-unit"><span class="cd-num">{secs:02d}</span><span class="cd-name">seconds</span></div>'
-        '</div>'
-        '</div>'
-    )
-
-while True:
-    cd_placeholder.markdown(_cd_html(), unsafe_allow_html=True)
-    time.sleep(1)
