@@ -7,24 +7,23 @@
 ## Features
 
 - **ML Match Prediction** — predicts Win / Draw / Loss using Logistic Regression and Random Forest trained on historical FIFA match data
-- **Elo-Based Rankings** — each team's strength is derived from a chronological Elo rating system (K=32)
+- **Live Countdown Timer** — real-time ticker counting down to the June 11 2026 opening match, updating every second via `st.fragment`
+- **Browse Nations Modal** — searchable flag grid covering all 48 qualified nations; click any flag card to instantly swap the selected team
 - **Animated Reveal** — results appear in a staggered sequence: team flags → predicted winner → probability bars → insights panel
-- **Win Probability Bars** — animated bars showing the likelihood of each outcome
-- **Match Insights Panel** — Elo edge, recent form differential, H2H win rate, and home advantage at a glance
+- **Win Probability Bars** — animated bars showing the likelihood of each outcome (Home / Draw / Away)
+- **Match Insights Panel** — Elo edge, form differential, H2H win rate, and home advantage in a single grid
 - **Head-to-Head History** — full W/D/L record and last 5 meetings pulled from historical data
-- **Team Form Tracker** — last 5 match results per team displayed as coloured W/D/L dots
-- **Key Players** — curated starting lineup highlights for all 48 qualified nations
-- **Match Preview** — auto-generated match narrative based on the computed stats
-- **2026 World Cup UI** — official colour palette (red `#E8112D`, black, silver), team flags via flagcdn, animated card layout
-- **48 Qualified Nations** — full CONCACAF, UEFA, AFC, CAF, CONMEBOL, and OFC squads
-- _(Placeholder) World Rankings integration_
-- _(Placeholder) Team Info Drawer_
+- **Team Form Tracker** — last 5 results per team displayed as coloured W/D/L dots
+- **Key Players** — curated squad highlights for all 48 qualified nations
+- **Auto-Generated Match Preview** — narrative text built from Elo, form, and H2H stats
+- **2026 Group Draw** — collapsible panel showing all 12 official groups with flags
+- **48 Qualified Nations** — full CONCACAF, UEFA, AFC, CAF, CONMEBOL, and OFC rosters
 
 ---
 
 ## Live Demo
 
-> **Streamlit Cloud:** `<!-- https://your-app-url.streamlit.app -->`  
+> **Streamlit Cloud:** `<!-- https://your-app-url.streamlit.app -->`
 > _(Link will be added after deployment)_
 
 ---
@@ -54,7 +53,7 @@ cd worldcup-2026-predictor
 **2. Install dependencies**
 
 ```bash
-pip install -r requirements.txt
+pip install streamlit scikit-learn pandas
 ```
 
 **3. Run the preprocessing pipeline**
@@ -80,10 +79,11 @@ streamlit run src/streamlit_app.py
 ## How to Use
 
 1. Open the app in your browser (defaults to `http://localhost:8501`)
-2. Select a **Home Team** and an **Away Team** from the dropdowns
-3. Toggle **Neutral Venue** if the match is played on neutral ground
-4. Click **Predict Match Outcome**
-5. Watch the animated reveal — team flags slide in, the predicted winner fades in, then probability bars expand and the full insights panel appears below
+2. Click **Browse all nations** under HOME or AWAY to open the flag grid
+3. Search or scroll to find a nation — click its card to select it
+4. Toggle **Neutral Venue** if the match is played on neutral ground
+5. Click **Predict Match Outcome**
+6. Watch the animated reveal — team flags slide in, the predicted winner fades up, then probability bars expand and the full insights panel appears
 
 ---
 
@@ -93,26 +93,57 @@ streamlit run src/streamlit_app.py
 worldcup-2026-predictor/
 │
 ├── src/
-│   ├── streamlit_app.py      # Main Streamlit UI and animation logic
-│   ├── preprocess.py         # Feature engineering pipeline (Elo, form, H2H)
-│   └── train_model.py        # Model training and serialisation
+│   ├── streamlit_app.py          # Entry point — page config, layout orchestration
+│   ├── styles.py                 # Global CSS injected at startup
+│   │
+│   ├── components/
+│   │   ├── countdown.py          # Live countdown fragment (st.fragment, run_every=1)
+│   │   ├── team_selector.py      # HOME/AWAY cards + Browse Nations modal
+│   │   ├── strength_meter.py     # Animated prediction reveal sequence
+│   │   └── groups.py             # 2026 group draw expander
+│   │
+│   ├── data/
+│   │   ├── team_logos.py         # Flag URLs for all 48 nations (flagcdn.com)
+│   │   ├── qualified_teams.py    # QUALIFIED_2026 list + GROUPS draw dict
+│   │   └── world_rankings.py     # KEY_PLAYERS squads for all 48 nations
+│   │
+│   ├── logic/
+│   │   └── prediction.py         # Model I/O, feature engineering, stat helpers
+│   │
+│   ├── preprocess.py             # Feature engineering pipeline (Elo, form, H2H)
+│   └── train_model.py            # Model training and serialisation
 │
 ├── data/
-│   ├── results.csv           # Historical match results
-│   ├── goalscorers.csv       # Goal-level data
-│   ├── shootouts.csv         # Penalty shootout records
-│   ├── former_names.csv      # Historical team name mappings
-│   └── processed_matches.csv # Engineered feature dataset (generated)
+│   ├── results.csv               # Historical international match results
+│   ├── goalscorers.csv           # Goal-level event data
+│   ├── shootouts.csv             # Penalty shootout records
+│   ├── former_names.csv          # Historical team name mappings
+│   └── processed_matches.csv     # Engineered feature dataset (generated)
 │
 ├── models/
-│   └── model.pkl             # Trained pipeline (generated)
+│   └── model.pkl                 # Trained pipeline (generated)
 │
 ├── assets/
-│   └── worldcup2026.png      # Official emblem (add manually)
+│   └── worldcup2026.png          # Official emblem (add manually)
 │
-├── requirements.txt
 └── README.md
 ```
+
+---
+
+## Architecture
+
+The app is split into four layers so each concern lives in one place:
+
+| Layer | Path | Responsibility |
+|---|---|---|
+| **Entry point** | `src/streamlit_app.py` | Page config, layout order, prediction trigger |
+| **Styles** | `src/styles.py` | All CSS — injected once at startup via `inject_css()` |
+| **Components** | `src/components/` | Self-contained UI pieces; each exposes a `render_*` function |
+| **Data** | `src/data/` | Pure Python dicts/lists — no logic, no imports |
+| **Logic** | `src/logic/prediction.py` | Model loading, feature engineering, stat calculations |
+
+Streamlit adds `src/` to `sys.path` at runtime, so every sub-package imports as `from data.team_logos import TEAM_LOGOS`, `from logic.prediction import build_input_row`, etc.
 
 ---
 
@@ -136,11 +167,11 @@ The model uses no raw match scores as input — all features are pre-match stati
 
 ## Future Improvements
 
-- [ ] **World Rankings** — overlay FIFA/Elo world ranking badges on team cards
-- [ ] **Team Info Drawer** — expandable panel with squad depth, coach, confederation
 - [ ] **Tournament Simulation** — simulate the full group stage and knockout bracket
 - [ ] **Live Odds Comparison** — compare model probabilities with bookmaker lines
-- [ ] **Form Trend Chart** — sparkline graph of Elo rating over the last 12 months
+- [ ] **Form Trend Chart** — sparkline of Elo rating over the last 12 months
+- [ ] **Team Info Drawer** — expandable panel with squad depth, coach, confederation
+- [ ] **Deploy to Streamlit Cloud** — add live demo link
 
 ---
 
