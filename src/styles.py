@@ -24,11 +24,91 @@ html, body, [class*="css"] {
         linear-gradient(180deg, #edf0f8 0%, #f2f4f9 100%) !important;
 }
 
-#MainMenu, footer, header { visibility: hidden; }
+/* Hide Streamlit chrome — keep the header (it holds our top nav) */
+#MainMenu { display: none !important; }
+footer    { display: none !important; }
+[data-testid="stToolbar"]      { display: none !important; }
+[data-testid="stDeployButton"] { display: none !important; }
+[data-testid="stStatusWidget"] { display: none !important; }
+[data-testid="stDecoration"]   { display: none !important; }
 
+/* ── Top nav bar — dark background + red underline ── */
+header[data-testid="stHeader"] {
+    background: linear-gradient(180deg, #06090f 0%, #0d1424 100%) !important;
+    border-bottom: 2px solid rgba(232,17,45,0.35) !important;
+}
+
+/* ── Top nav links (stTopNavLink is the real testid in Streamlit 1.55) ── */
+
+/* Individual page link wrapper */
+[data-testid="stTopNavLinkContainer"] {
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+/* The <a> element */
+[data-testid="stTopNavLink"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0.45rem 0.85rem !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    border-bottom: 2px solid transparent !important;
+    color: rgba(255,255,255,0.65) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    text-decoration: none !important;
+    transition: color 0.15s, border-color 0.15s !important;
+    white-space: nowrap !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+[data-testid="stTopNavLink"]:hover,
+[data-testid="stTopNavLink"]:visited,
+[data-testid="stTopNavLink"]:active {
+    background: transparent !important;
+    color: #ffffff !important;
+    border-bottom-color: rgba(232,17,45,0.5) !important;
+    text-decoration: none !important;
+}
+[data-testid="stTopNavLink"][aria-current="page"] {
+    color: #ffffff !important;
+    border-bottom: 2px solid #E8112D !important;
+    background: transparent !important;
+}
+
+/* All text/span children inherit the forced white color */
+[data-testid="stTopNavLink"] span,
+[data-testid="stTopNavLink"] * {
+    color: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    letter-spacing: inherit !important;
+    text-transform: inherit !important;
+    background: transparent !important;
+}
+
+/* Section dropdown trigger (stTopNavSection) */
+[data-testid="stTopNavSection"] {
+    color: rgba(255,255,255,0.65) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    background: transparent !important;
+}
+[data-testid="stTopNavSection"] * {
+    color: inherit !important;
+}
+
+/* Page content — enough top padding to clear the fixed header */
 .block-container {
     max-width: 780px !important;
-    padding: 0 1.25rem 4rem 1.25rem !important;
+    padding: 5rem 1.25rem 4rem 1.25rem !important;
 }
 
 /* ═══════════════════════ HERO BANNER ═══════════════════════ */
