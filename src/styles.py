@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
 APP_CSS = """
 <style>
@@ -24,91 +25,27 @@ html, body, [class*="css"] {
         linear-gradient(180deg, #edf0f8 0%, #f2f4f9 100%) !important;
 }
 
-/* Hide Streamlit chrome — keep the header (it holds our top nav) */
+/* Hide Streamlit chrome */
 #MainMenu { display: none !important; }
 footer    { display: none !important; }
-[data-testid="stToolbar"]      { display: none !important; }
 [data-testid="stDeployButton"] { display: none !important; }
 [data-testid="stStatusWidget"] { display: none !important; }
 [data-testid="stDecoration"]   { display: none !important; }
 
-/* ── Top nav bar — dark background + red underline ── */
+/* Remove Streamlit's header bar — countdown bar is the only top bar */
 header[data-testid="stHeader"] {
-    background: linear-gradient(180deg, #06090f 0%, #0d1424 100%) !important;
-    border-bottom: 2px solid rgba(232,17,45,0.35) !important;
-}
-
-/* ── Top nav links (stTopNavLink is the real testid in Streamlit 1.55) ── */
-
-/* Individual page link wrapper */
-[data-testid="stTopNavLinkContainer"] {
-    display: inline-flex !important;
-    align-items: center !important;
-}
-
-/* The <a> element */
-[data-testid="stTopNavLink"] {
-    display: inline-flex !important;
-    align-items: center !important;
-    padding: 0.45rem 0.85rem !important;
     background: transparent !important;
-    border-radius: 0 !important;
-    border-bottom: 2px solid transparent !important;
-    color: rgba(255,255,255,0.65) !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 700 !important;
-    font-size: 0.72rem !important;
-    letter-spacing: 0.12em !important;
-    text-transform: uppercase !important;
-    text-decoration: none !important;
-    transition: color 0.15s, border-color 0.15s !important;
-    white-space: nowrap !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-}
-[data-testid="stTopNavLink"]:hover,
-[data-testid="stTopNavLink"]:visited,
-[data-testid="stTopNavLink"]:active {
-    background: transparent !important;
-    color: #ffffff !important;
-    border-bottom-color: rgba(232,17,45,0.5) !important;
-    text-decoration: none !important;
-}
-[data-testid="stTopNavLink"][aria-current="page"] {
-    color: #ffffff !important;
-    border-bottom: 2px solid #E8112D !important;
-    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: visible !important;
 }
 
-/* All text/span children inherit the forced white color */
-[data-testid="stTopNavLink"] span,
-[data-testid="stTopNavLink"] * {
-    color: inherit !important;
-    font-size: inherit !important;
-    font-weight: inherit !important;
-    letter-spacing: inherit !important;
-    text-transform: inherit !important;
-    background: transparent !important;
-}
-
-/* Section dropdown trigger (stTopNavSection) */
-[data-testid="stTopNavSection"] {
-    color: rgba(255,255,255,0.65) !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 700 !important;
-    font-size: 0.72rem !important;
-    letter-spacing: 0.12em !important;
-    text-transform: uppercase !important;
-    background: transparent !important;
-}
-[data-testid="stTopNavSection"] * {
-    color: inherit !important;
-}
-
-/* Page content — enough top padding to clear the fixed header */
+/* Page content — top padding clears the ~3.75rem absolute Streamlit header */
 .block-container {
     max-width: 780px !important;
-    padding: 5rem 1.25rem 4rem 1.25rem !important;
+    padding: 4.5rem 1.25rem 4rem 1.25rem !important;
 }
 
 /* ═══════════════════════ HERO BANNER ═══════════════════════ */
@@ -247,34 +184,51 @@ header[data-testid="stHeader"] {
 .stButton > button[kind="primary"]:active { transform: translateY(0) !important; }
 
 /* ═══════════════════════ COUNTDOWN BAR ═══════════════════════ */
+/* ── Countdown pinned to the top navbar ── */
 .countdown-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9999999;
+    height: 3.25rem;
     display: flex; align-items: center; justify-content: center;
-    flex-wrap: wrap; gap: 1rem;
+    gap: 1rem; flex-wrap: nowrap;
     background: linear-gradient(135deg, #06090f 0%, #0d1424 100%);
-    border: 1px solid rgba(232,17,45,0.22);
-    border-radius: 16px; padding: 0.9rem 1.5rem;
-    margin-bottom: 1.25rem;
-    box-shadow: 0 2px 12px rgba(6,9,15,0.18);
+    border-bottom: 1px solid rgba(232,17,45,0.28);
+    border-radius: 0;
+    padding: 0 1.5rem;
+    margin-bottom: 0;
+    box-shadow: 0 2px 12px rgba(6,9,15,0.22);
 }
 .cd-label {
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.11em;
     text-transform: uppercase; color: rgba(255,255,255,0.45);
     white-space: nowrap;
 }
-.cd-units { display: flex; align-items: center; gap: 0.4rem; }
-.cd-unit  { display: flex; flex-direction: column; align-items: center; min-width: 42px; }
+.cd-units { display: flex; align-items: center; gap: 0.35rem; }
+.cd-unit  { display: flex; flex-direction: column; align-items: center; min-width: 36px; }
 .cd-num   {
-    font-size: 1.55rem; font-weight: 900; color: #ffffff;
+    font-size: 1.2rem; font-weight: 900; color: #ffffff;
     line-height: 1; letter-spacing: -0.02em;
 }
 .cd-name  {
-    font-size: 0.55rem; font-weight: 700; letter-spacing: 0.12em;
+    font-size: 0.48rem; font-weight: 700; letter-spacing: 0.11em;
     text-transform: uppercase; color: rgba(255,255,255,0.38);
-    margin-top: 0.12rem;
+    margin-top: 0.08rem;
 }
 .cd-sep   {
-    font-size: 1.3rem; font-weight: 900; color: var(--red);
-    line-height: 1; margin-bottom: 0.6rem; align-self: flex-start; padding-top: 0.1rem;
+    font-size: 1rem; font-weight: 900; color: var(--red);
+    line-height: 1; margin-bottom: 0.45rem; align-self: flex-start; padding-top: 0.05rem;
+}
+
+/* Push sidebar content below the fixed countdown bar */
+section[data-testid="stSidebar"] > div:first-child {
+    padding-top: 3.25rem !important;
+}
+
+/* Hide native sidebar toggle buttons — custom JS button handles toggling */
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stExpandSidebarButton"] {
+    display: none !important;
 }
 
 /* ═══════════════════════ TEAM SLOT LABELS ═══════════════════════ */
@@ -545,5 +499,42 @@ hr { border: none !important; border-top: 1px solid #e4eaf3 !important; margin: 
 """
 
 
+_SIDEBAR_TOGGLE_JS = """<script>
+(function() {
+    var doc = window.parent.document;
+    if (doc.getElementById('st-sidebar-toggle')) return;
+    var btn = doc.createElement('button');
+    btn.id = 'st-sidebar-toggle';
+    btn.title = 'Toggle sidebar';
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" '
+        + 'stroke="rgba(255,255,255,0.85)" stroke-width="2.5" stroke-linecap="round">'
+        + '<line x1="3" y1="6" x2="21" y2="6"/>'
+        + '<line x1="3" y1="12" x2="21" y2="12"/>'
+        + '<line x1="3" y1="18" x2="21" y2="18"/>'
+        + '</svg>';
+    btn.style.cssText = [
+        'position:fixed', 'top:0.5rem', 'left:0.55rem',
+        'z-index:999999999', 'background:transparent', 'border:none',
+        'cursor:pointer', 'padding:0.3rem 0.4rem', 'border-radius:6px',
+        'line-height:0', 'display:flex', 'align-items:center', 'justify-content:center'
+    ].join(';');
+    btn.addEventListener('mouseenter', function() {
+        btn.style.background = 'rgba(255,255,255,0.12)';
+    });
+    btn.addEventListener('mouseleave', function() {
+        btn.style.background = 'transparent';
+    });
+    btn.addEventListener('click', function() {
+        var cb = doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
+        if (cb) { cb.click(); return; }
+        var eb = doc.querySelector('[data-testid="stExpandSidebarButton"] button');
+        if (eb) { eb.click(); }
+    });
+    doc.body.appendChild(btn);
+})();
+</script>"""
+
+
 def inject_css() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
+    components.html(_SIDEBAR_TOGGLE_JS, height=0)
