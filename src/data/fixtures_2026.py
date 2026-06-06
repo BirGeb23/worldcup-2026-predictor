@@ -24,12 +24,12 @@ _MONTH = {
     "September":"09","October": "10", "November":"11",   "December": "12",
 }
 
-# ── City → local timezone abbreviation ───────────────────────────────────────
+# ── City → timezone label (all times displayed in ET) ────────────────────────
 _TZ = {
-    "Mexico City": "CT",  "Guadalajara": "CT",  "Monterrey": "CT",
-    "Toronto":     "ET",  "Vancouver":   "PT",
-    "Seattle":     "PT",  "Los Angeles": "PT",  "San Francisco Bay Area": "PT",
-    "Houston":     "CT",  "Dallas":      "CT",  "Kansas City": "CT",
+    "Mexico City": "ET",  "Guadalajara": "ET",  "Monterrey": "ET",
+    "Toronto":     "ET",  "Vancouver":   "ET",
+    "Seattle":     "ET",  "Los Angeles": "ET",  "San Francisco Bay Area": "ET",
+    "Houston":     "ET",  "Dallas":      "ET",  "Kansas City": "ET",
     "New Jersey":  "ET",  "Philadelphia":"ET",  "Boston": "ET",
     "Miami":       "ET",  "Atlanta":     "ET",
 }

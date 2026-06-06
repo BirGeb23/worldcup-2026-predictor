@@ -10,7 +10,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from styles import inject_css
 from data.team_logos import TEAM_LOGOS
-from data.qualified_teams import QUALIFIED_2026, GROUPS
 from data.fixtures_2026 import FIXTURES
 
 inject_css()
@@ -127,34 +126,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Filters ───────────────────────────────────────────────────────────────────
-
-all_groups   = ["All Groups"]   + [f"Group {l}" for l in "ABCDEFGHIJKL"]
-all_stadiums = ["All Stadiums"] + sorted({f["stadium"] for f in FIXTURES})
-all_teams    = ["All Teams"]    + sorted(QUALIFIED_2026)
-
-f_col1, f_col2, f_col3 = st.columns(3, gap="small")
-with f_col1:
-    sel_group   = st.selectbox("Group",   all_groups,   label_visibility="collapsed",
-                               index=0, key="fx_group")
-with f_col2:
-    sel_stadium = st.selectbox("Stadium", all_stadiums, label_visibility="collapsed",
-                               index=0, key="fx_stadium")
-with f_col3:
-    sel_team    = st.selectbox("Team",    all_teams,    label_visibility="collapsed",
-                               index=0, key="fx_team")
-
-# ── Apply filters ─────────────────────────────────────────────────────────────
+# ── Group by date ─────────────────────────────────────────────────────────────
 
 filtered = FIXTURES
-if sel_group != "All Groups":
-    filtered = [f for f in filtered if f["group"] == sel_group]
-if sel_stadium != "All Stadiums":
-    filtered = [f for f in filtered if f["stadium"] == sel_stadium]
-if sel_team != "All Teams":
-    filtered = [f for f in filtered if sel_team in (f["home"], f["away"])]
-
-# ── Group by date ─────────────────────────────────────────────────────────────
 
 by_date: dict[str, list[dict]] = defaultdict(list)
 for fx in filtered:
@@ -197,7 +171,7 @@ def _fixture_card(fx: dict) -> str:
 
 
 if not sorted_dates:
-    st.markdown('<div class="fx-empty">No fixtures match the selected filters.</div>',
+    st.markdown('<div class="fx-empty">No fixtures available.</div>',
                 unsafe_allow_html=True)
 else:
     match_count = sum(len(by_date[d]) for d in sorted_dates)
