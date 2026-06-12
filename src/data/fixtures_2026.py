@@ -124,6 +124,21 @@ _RAW: list[dict] = [
 ]
 
 
+# ── Results (fill in as matches are played) ───────────────────────────────────
+# Key: match ID (M001 … M072)
+# Value: { "score": "home_goals-away_goals", "status": "finished" | "live" }
+# Leave a match out (or omit "score") to keep it as "upcoming".
+#
+# Example:
+#   "M001": {"score": "2-1", "status": "finished"},   # Mexico 2-1 South Africa
+#   "M002": {"score": "1-0", "status": "live"},        # South Korea 1-0 Czechia (in progress)
+RESULTS: dict[str, dict] = {
+    "M001": {"score": "2-0", "status": "finished"},   # Mexico 2-0 South Africa
+    "M002": {"score": "0-1", "status": "live"},        # South Korea 0-1 Czechia (in progress)
+    "M003": {"score": "2-2", "status": "finished"},    # Canada 2-2 Bosnia and Herzegovina
+}
+
+
 def _build() -> list[dict]:
     group_counts: dict[str, int] = defaultdict(int)
     fixtures = []
@@ -133,9 +148,11 @@ def _build() -> list[dict]:
         md    = 1 if count < 2 else (2 if count < 4 else 3)
         group_counts[grp] += 1
 
-        city = r["City"]
+        mid    = f"M{i:03d}"
+        city   = r["City"]
+        result = RESULTS.get(mid, {})
         fixtures.append({
-            "id":         f"M{i:03d}",
+            "id":         mid,
             "matchday":   md,
             "group":      grp,
             "stage":      f"First Stage, {grp}",
@@ -147,7 +164,17 @@ def _build() -> list[dict]:
             "stadium":    r["Stadium"],
             "city":       city,
             "country":    _COUNTRY.get(city, "United States"),
+            "score":      result.get("score", ""),
+            "status":     result.get("status", "upcoming"),
         })
+    # Debug: print first fixture that has a result so wiring is easy to verify
+    for fx in fixtures:
+        if fx["status"] != "upcoming":
+            import pprint
+            print("\n[fixtures_2026] sample merged fixture:")
+            pprint.pprint(fx)
+            break
+
     return fixtures
 
 

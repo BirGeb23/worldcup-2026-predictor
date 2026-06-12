@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from styles import inject_css
 from data.team_logos import TEAM_LOGOS
 from data.qualified_teams import GROUPS
+from data.fixtures_2026 import FIXTURES
 
 inject_css()
 
@@ -133,8 +134,51 @@ def _initial_row() -> dict:
 
 
 def get_standings() -> dict[str, dict]:
-    """Return standings dict. Update this function to pull live results."""
-    return {team: _initial_row() for group_teams in GROUPS.values() for team in group_teams}
+    """Build standings by accumulating every finished fixture result."""
+    standings: dict[str, dict] = {
+        team: _initial_row()
+        for group_teams in GROUPS.values()
+        for team in group_teams
+    }
+
+    for fx in FIXTURES:
+        if fx.get("status") != "finished":
+            continue
+        score = fx.get("score", "")
+        try:
+            hg, ag = map(int, score.split("-"))
+        except (ValueError, AttributeError):
+            continue
+
+        home, away = fx["home"], fx["away"]
+        if home not in standings or away not in standings:
+            continue
+
+        standings[home]["p"] += 1
+        standings[away]["p"] += 1
+        standings[home]["gf"] += hg
+        standings[home]["ga"] += ag
+        standings[away]["gf"] += ag
+        standings[away]["ga"] += hg
+
+        if hg > ag:
+            standings[home]["w"]   += 1
+            standings[home]["pts"] += 3
+            standings[away]["l"]   += 1
+        elif ag > hg:
+            standings[away]["w"]   += 1
+            standings[away]["pts"] += 3
+            standings[home]["l"]   += 1
+        else:
+            standings[home]["d"]   += 1
+            standings[away]["d"]   += 1
+            standings[home]["pts"] += 1
+            standings[away]["pts"] += 1
+
+    for row in standings.values():
+        row["gd"] = row["gf"] - row["ga"]
+
+    return standings
 
 
 STANDINGS = get_standings()

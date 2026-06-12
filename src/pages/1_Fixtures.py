@@ -108,6 +108,30 @@ st.markdown("""
     text-transform: uppercase; margin-top: 0.18rem;
 }
 
+/* ── Score (finished / live) ── */
+.fx-score {
+    font-size: 1.35rem; font-weight: 900; color: #fff;
+    letter-spacing: -0.02em; line-height: 1;
+}
+.fx-status-ft {
+    font-size: 0.52rem; font-weight: 700;
+    color: rgba(255,255,255,0.32); letter-spacing: 0.14em;
+    text-transform: uppercase; margin-top: 0.18rem;
+}
+.fx-live-badge {
+    display: inline-block;
+    font-size: 0.5rem; font-weight: 800;
+    background: #E8112D; color: #fff;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.12rem 0.5rem; border-radius: 999px;
+    margin-top: 0.2rem;
+    animation: livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.45; }
+}
+
 /* ── No results ── */
 .fx-empty {
     text-align: center; color: #94a3b8;
@@ -172,6 +196,28 @@ sorted_dates = sorted(by_date.keys())
 
 # ── Render ────────────────────────────────────────────────────────────────────
 
+def _center_html(fx: dict) -> str:
+    status = fx.get("status", "upcoming")
+    score  = fx.get("score", "")
+    if status == "finished" and score:
+        return (
+            f'<div class="fx-score">{score}</div>'
+            f'<div class="fx-status-ft">FT</div>'
+            f'<div class="fx-vs-label">vs</div>'
+        )
+    if status == "live":
+        return (
+            f'<div class="fx-score">{score or "· - ·"}</div>'
+            f'<div class="fx-live-badge">LIVE</div>'
+            f'<div class="fx-vs-label">vs</div>'
+        )
+    return (
+        f'<div class="fx-kickoff-time">{fx["kickoff"]}</div>'
+        f'<div class="fx-kickoff-tz">{fx["kickoff_tz"]}</div>'
+        f'<div class="fx-vs-label">vs</div>'
+    )
+
+
 def _fixture_card(fx: dict) -> str:
     home_flag = TEAM_LOGOS.get(fx["home"], "")
     away_flag = TEAM_LOGOS.get(fx["away"], "")
@@ -192,9 +238,7 @@ def _fixture_card(fx: dict) -> str:
       {home_img}
     </div>
     <div class="fx-center">
-      <div class="fx-kickoff-time">{fx["kickoff"]}</div>
-      <div class="fx-kickoff-tz">{fx["kickoff_tz"]}</div>
-      <div class="fx-vs-label">vs</div>
+      {_center_html(fx)}
     </div>
     <div class="fx-team-away">
       {away_img}
