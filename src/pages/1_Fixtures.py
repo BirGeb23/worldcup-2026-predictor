@@ -114,6 +114,40 @@ st.markdown("""
     font-size: 0.88rem; padding: 2.5rem 0;
     font-weight: 500;
 }
+
+/* ── Predict button — fused to the bottom of each fixture card ── */
+.fx-card {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    margin-bottom: 0 !important;
+    border-bottom: 1px solid rgba(232,17,45,0.18) !important;
+}
+[data-testid="element-container"]:has(.fx-card) {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+[data-testid="element-container"]:has(.stButton) {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+.stButton > button {
+    background: rgba(10,13,24,0.92) !important;
+    color: rgba(232,17,45,0.85) !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    border-top: none !important;
+    border-radius: 0 0 16px 16px !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    padding: 0.5rem 1rem !important;
+    margin-bottom: 0.8rem !important;
+    transition: background 0.15s, color 0.15s !important;
+}
+.stButton > button:hover {
+    background: rgba(232,17,45,0.14) !important;
+    color: #ffffff !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -187,5 +221,14 @@ else:
           <div class="fx-date-rule"></div>
         </div>""", unsafe_allow_html=True)
 
-        cards_html = "".join(_fixture_card(fx) for fx in by_date[date_str])
-        st.markdown(cards_html, unsafe_allow_html=True)
+        for fx in by_date[date_str]:
+            st.markdown(_fixture_card(fx), unsafe_allow_html=True)
+            if st.button(
+                "⚽  Predict Outcome",
+                key=f"predict_{fx['id']}",
+                use_container_width=True,
+            ):
+                st.query_params["home"] = fx["home"]
+                st.query_params["away"] = fx["away"]
+                st.query_params["go"]   = "1"
+                st.switch_page("pages/predictor.py")

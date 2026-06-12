@@ -81,17 +81,17 @@ def render_team_selector() -> None:
     Reads and writes st.session_state["home_team"] and st.session_state["away_team"].
     Call st.session_state["home_team"] / ["away_team"] after this to get the selections.
     """
-    if "home_team" not in st.session_state:
-        st.session_state["home_team"] = "Brazil"
-    if "away_team" not in st.session_state:
-        st.session_state["away_team"] = "Argentina"
+    if "team1" not in st.session_state:
+        st.session_state["team1"] = "Brazil"
+    if "team2" not in st.session_state:
+        st.session_state["team2"] = "Argentina"
 
     st.markdown('<span class="wc-card-label">⚽ Select Teams</span>', unsafe_allow_html=True)
 
     c_home, c_vs, c_away = st.columns([10, 3, 10])
 
     with c_home:
-        home_team = st.session_state["home_team"]
+        home_team = st.session_state["team1"]
         home_flag = TEAM_LOGOS.get(home_team, "")
         st.markdown('<p class="team-slot-label">HOME</p>', unsafe_allow_html=True)
         st.markdown(f"""
@@ -100,7 +100,7 @@ def render_team_selector() -> None:
             <div class="crest-name">{home_team}</div>
         </div>""", unsafe_allow_html=True)
         if st.button("🔍  Browse all nations", key="browse_home", use_container_width=True):
-            nation_picker_modal("home_team")
+            nation_picker_modal("team1")
 
     with c_vs:
         st.markdown("""
@@ -111,7 +111,7 @@ def render_team_selector() -> None:
         </div>""", unsafe_allow_html=True)
 
     with c_away:
-        away_team = st.session_state["away_team"]
+        away_team = st.session_state["team2"]
         away_flag = TEAM_LOGOS.get(away_team, "")
         st.markdown('<p class="team-slot-label">AWAY</p>', unsafe_allow_html=True)
         st.markdown(f"""
@@ -120,4 +120,4 @@ def render_team_selector() -> None:
             <div class="crest-name">{away_team}</div>
         </div>""", unsafe_allow_html=True)
         if st.button("🔍  Browse all nations", key="browse_away", use_container_width=True):
-            nation_picker_modal("away_team")
+            nation_picker_modal("team2")

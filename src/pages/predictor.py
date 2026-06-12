@@ -40,6 +40,16 @@ def _emblem_img_tag() -> str:
 render_countdown()
 inject_css()
 
+# Auto-fill teams when arriving from the Fixtures page (go=1 signals intent).
+# Must happen before render_team_selector() so the selector sees the values.
+if st.query_params.get("go") == "1":
+    _home = st.query_params.get("home", "")
+    _away = st.query_params.get("away", "")
+    if _home:
+        st.session_state["team1"] = _home
+    if _away:
+        st.session_state["team2"] = _away
+
 st.markdown(f"""
 <div class="wc-hero">
     <div class="hero-eyebrow">FIFA World Cup™</div>
@@ -61,8 +71,8 @@ df         = load_data()
 team_stats = build_team_stats(df)
 
 render_team_selector()
-home_team = st.session_state["home_team"]
-away_team = st.session_state["away_team"]
+home_team = st.session_state["team1"]
+away_team = st.session_state["team2"]
 
 st.markdown('<hr style="margin:1.25rem 0 0.85rem;">', unsafe_allow_html=True)
 neutral = st.toggle("🌐 Neutral Venue", value=True)
