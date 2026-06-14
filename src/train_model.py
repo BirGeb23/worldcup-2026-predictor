@@ -1,4 +1,4 @@
-import pickle
+import joblib
 import pandas as pd
 from pathlib import Path
 from sklearn.compose import ColumnTransformer
@@ -89,9 +89,8 @@ def train():
             best_acc, best_pipeline, best_name = acc, pipeline, name
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    model_path = MODEL_DIR / "model.pkl"
-    with open(model_path, "wb") as f:
-        pickle.dump(best_pipeline, f)
+    model_path = MODEL_DIR / "model.joblib"
+    joblib.dump(best_pipeline, model_path)
 
     print(f"\nBest model: {best_name} ({best_acc:.4f}) — saved to {model_path}")
 

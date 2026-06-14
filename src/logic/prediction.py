@@ -1,11 +1,11 @@
-import pickle
+import joblib
 import pandas as pd
 import streamlit as st
 from pathlib import Path
 
 # src/logic/prediction.py → parent = logic/ → parent = src/ → parent = project root
 BASE_DIR   = Path(__file__).resolve().parent.parent.parent
-MODEL_PATH = BASE_DIR / "models" / "model.pkl"
+MODEL_PATH = BASE_DIR / "models" / "model.joblib"
 DATA_PATH  = BASE_DIR / "data"   / "processed_matches.csv"
 
 TOURNAMENT = "FIFA World Cup 2026"
@@ -24,8 +24,7 @@ FEATURE_COLS = [
 
 @st.cache_resource
 def load_model():
-    with open(MODEL_PATH, "rb") as f:
-        return pickle.load(f)
+    return joblib.load(MODEL_PATH)
 
 
 @st.cache_data
