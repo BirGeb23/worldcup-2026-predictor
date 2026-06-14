@@ -7,7 +7,12 @@ Team names are normalised to match TEAM_LOGOS keys.
 Matchday is auto-assigned (first 2 group appearances = MD1, next 2 = MD2, last 2 = MD3).
 """
 
+import json
+from pathlib import Path
 from collections import defaultdict
+
+# results.json sits next to this file — edit it to add/update scores.
+_RESULTS_FILE = Path(__file__).parent / "results.json"
 
 # ── Name normalisation: JSON name → TEAM_LOGOS key ────────────────────────────
 _TEAM = {
@@ -124,22 +129,8 @@ _RAW: list[dict] = [
 ]
 
 
-# ── Results (fill in as matches are played) ───────────────────────────────────
-# Key: match ID (M001 … M072)
-# Value: { "score": "home_goals-away_goals", "status": "finished" | "live" }
-# Leave a match out (or omit "score") to keep it as "upcoming".
-#
-# Example:
-#   "M001": {"score": "2-1", "status": "finished"},   # Mexico 2-1 South Africa
-#   "M002": {"score": "1-0", "status": "live"},        # South Korea 1-0 Czechia (in progress)
-RESULTS: dict[str, dict] = {
-    "M001": {"score": "2-0", "status": "finished"},   # Mexico 2-0 South Africa
-    "M002": {"score": "0-1", "status": "live"},        # South Korea 0-1 Czechia (in progress)
-    "M003": {"score": "2-2", "status": "finished"},    # Canada 2-2 Bosnia and Herzegovina
-}
-
-
-def _build() -> list[dict]:
+def _build_base() -> list[dict]:
+    """Build static fixture fields (teams, dates, stadium). No score/status."""
     group_counts: dict[str, int] = defaultdict(int)
     fixtures = []
     for i, r in enumerate(_RAW, 1):
@@ -148,9 +139,8 @@ def _build() -> list[dict]:
         md    = 1 if count < 2 else (2 if count < 4 else 3)
         group_counts[grp] += 1
 
-        mid    = f"M{i:03d}"
-        city   = r["City"]
-        result = RESULTS.get(mid, {})
+        mid  = f"M{i:03d}"
+        city = r["City"]
         fixtures.append({
             "id":         mid,
             "matchday":   md,
@@ -164,18 +154,35 @@ def _build() -> list[dict]:
             "stadium":    r["Stadium"],
             "city":       city,
             "country":    _COUNTRY.get(city, "United States"),
-            "score":      result.get("score", ""),
-            "status":     result.get("status", "upcoming"),
         })
-    # Debug: print first fixture that has a result so wiring is easy to verify
-    for fx in fixtures:
-        if fx["status"] != "upcoming":
-            import pprint
-            print("\n[fixtures_2026] sample merged fixture:")
-            pprint.pprint(fx)
-            break
-
     return fixtures
 
 
-FIXTURES: list[dict] = _build()
+# Static base — built once at import time, never has score/status.
+_BASE: list[dict] = _build_base()
+
+
+def get_fixtures() -> list[dict]:
+    """Return all 72 fixtures with the latest results merged in.
+
+    Reads results.json on every call, so the UI updates on the next Streamlit
+    rerun after the file is saved — no server restart needed.
+
+    results.json format:
+        { "M001": {"score": "2-0", "status": "finished"}, ... }
+
+    Valid statuses: "upcoming" (default) | "live" | "finished"
+    """
+    try:
+        results: dict = json.loads(_RESULTS_FILE.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        results = {}
+
+    return [
+        {
+            **fx,
+            "score":  results.get(fx["id"], {}).get("score",  ""),
+            "status": results.get(fx["id"], {}).get("status", "upcoming"),
+        }
+        for fx in _BASE
+    ]

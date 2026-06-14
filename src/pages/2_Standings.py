@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from styles import inject_css
 from data.team_logos import TEAM_LOGOS
 from data.qualified_teams import GROUPS
-from data.fixtures_2026 import FIXTURES
+from data.fixtures_2026 import get_fixtures
 
 inject_css()
 
@@ -141,7 +141,7 @@ def get_standings() -> dict[str, dict]:
         for team in group_teams
     }
 
-    for fx in FIXTURES:
+    for fx in get_fixtures():
         if fx.get("status") != "finished":
             continue
         score = fx.get("score", "")

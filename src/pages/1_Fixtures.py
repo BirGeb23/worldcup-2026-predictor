@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from styles import inject_css
 from data.team_logos import TEAM_LOGOS
-from data.fixtures_2026 import FIXTURES
+from data.fixtures_2026 import get_fixtures
 
 inject_css()
 
@@ -186,7 +186,7 @@ st.markdown("""
 
 # ── Group by date ─────────────────────────────────────────────────────────────
 
-filtered = FIXTURES
+filtered = get_fixtures()
 
 by_date: dict[str, list[dict]] = defaultdict(list)
 for fx in filtered:
