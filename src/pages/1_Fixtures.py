@@ -139,14 +139,14 @@ st.markdown("""
     font-weight: 500;
 }
 
-/* ── Predict button — fused to the bottom of each fixture card ── */
-.fx-card {
+/* ── Predict button — fused to the bottom of pending fixture cards only ── */
+.fx-card-pending {
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
     margin-bottom: 0 !important;
     border-bottom: 1px solid rgba(232,17,45,0.18) !important;
 }
-[data-testid="element-container"]:has(.fx-card) {
+[data-testid="element-container"]:has(.fx-card-pending) {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
 }
@@ -223,8 +223,9 @@ def _fixture_card(fx: dict) -> str:
     away_flag = TEAM_LOGOS.get(fx["away"], "")
     home_img  = f'<img src="{home_flag}" class="fx-flag" />' if home_flag else ""
     away_img  = f'<img src="{away_flag}" class="fx-flag" />' if away_flag else ""
+    card_class = "fx-card" if fx.get("status") == "finished" else "fx-card fx-card-pending"
     return f"""
-<div class="fx-card">
+<div class="{card_class}">
   <div class="fx-card-meta">
     <span>{fx["stadium"]}, {fx["city"]}</span>
     <span class="fx-meta-dot">·</span>
@@ -267,12 +268,15 @@ else:
 
         for fx in by_date[date_str]:
             st.markdown(_fixture_card(fx), unsafe_allow_html=True)
-            if st.button(
-                "⚽  Predict Outcome",
-                key=f"predict_{fx['id']}",
-                use_container_width=True,
-            ):
-                st.query_params["home"] = fx["home"]
-                st.query_params["away"] = fx["away"]
-                st.query_params["go"]   = "1"
-                st.switch_page("pages/predictor.py")
+            if fx.get("status") == "finished":
+                pass  # score is already displayed on the card
+            else:
+                if st.button(
+                    "⚽  Predict Outcome",
+                    key=f"predict_{fx['id']}",
+                    use_container_width=True,
+                ):
+                    st.query_params["home"] = fx["home"]
+                    st.query_params["away"] = fx["away"]
+                    st.query_params["go"]   = "1"
+                    st.switch_page("pages/predictor.py")
