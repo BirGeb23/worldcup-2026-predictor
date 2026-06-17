@@ -227,11 +227,11 @@ def _fixture_card(fx: dict) -> str:
     return f"""
 <div class="{card_class}">
   <div class="fx-card-meta">
-    <span>{fx["stadium"]}, {fx["city"]}</span>
+    <span>Matchday {fx["matchday"]}</span>
     <span class="fx-meta-dot">·</span>
     <span class="fx-meta-grp">{fx["group"]}</span>
     <span class="fx-meta-dot">·</span>
-    <span>Matchday {fx["matchday"]}</span>
+    <span>{fx["stadium"]}, {fx["city"]}</span>
   </div>
   <div class="fx-teams">
     <div class="fx-team-home">
