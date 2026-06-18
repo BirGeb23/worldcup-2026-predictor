@@ -91,7 +91,7 @@ st.markdown("""
 .fx-team-away .fx-team-name { text-align: left; }
 
 .fx-center {
-    text-align: center; flex-shrink: 0; min-width: 68px;
+    text-align: center; flex-shrink: 0; min-width: 96px;
 }
 .fx-kickoff-time {
     font-size: 1.05rem; font-weight: 900; color: #fff;
@@ -102,21 +102,20 @@ st.markdown("""
     color: rgba(232,17,45,0.85); letter-spacing: 0.1em;
     text-transform: uppercase; margin-top: 0.15rem;
 }
-.fx-vs-label {
-    font-size: 0.52rem; font-weight: 700;
-    color: rgba(255,255,255,0.2); letter-spacing: 0.12em;
-    text-transform: uppercase; margin-top: 0.18rem;
-}
 
-/* ── Score (finished / live) ── */
-.fx-score {
-    font-size: 1.35rem; font-weight: 900; color: #fff;
-    letter-spacing: -0.02em; line-height: 1;
+/* ── Split score row: digit · separator · digit ── */
+.fx-split-scores {
+    display: flex; align-items: center;
+    justify-content: center; gap: 0.45rem;
 }
-.fx-status-ft {
+.fx-score-digit {
+    font-size: 1.35rem; font-weight: 900; color: #fff;
+    line-height: 1; min-width: 1ch; text-align: center;
+}
+.fx-sep-ft {
     font-size: 0.52rem; font-weight: 700;
     color: rgba(255,255,255,0.32); letter-spacing: 0.14em;
-    text-transform: uppercase; margin-top: 0.18rem;
+    text-transform: uppercase;
 }
 .fx-live-badge {
     display: inline-block;
@@ -124,7 +123,6 @@ st.markdown("""
     background: #E8112D; color: #fff;
     letter-spacing: 0.1em; text-transform: uppercase;
     padding: 0.12rem 0.5rem; border-radius: 999px;
-    margin-top: 0.2rem;
     animation: livePulse 1.4s ease-in-out infinite;
 }
 @keyframes livePulse {
@@ -199,22 +197,33 @@ sorted_dates = sorted(by_date.keys())
 def _center_html(fx: dict) -> str:
     status = fx.get("status", "upcoming")
     score  = fx.get("score", "")
+
     if status == "finished" and score:
+        parts = score.split("-", 1)
+        hg, ag = (parts[0], parts[1]) if len(parts) == 2 else (score, "")
         return (
-            f'<div class="fx-score">{score}</div>'
-            f'<div class="fx-status-ft">FT</div>'
-            f'<div class="fx-vs-label">vs</div>'
+            f'<div class="fx-split-scores">'
+            f'<span class="fx-score-digit">{hg}</span>'
+            f'<span class="fx-sep-ft">FT</span>'
+            f'<span class="fx-score-digit">{ag}</span>'
+            f'</div>'
         )
+
     if status == "live":
+        parts = score.split("-", 1) if score else []
+        hg = parts[0] if len(parts) == 2 else "·"
+        ag = parts[1] if len(parts) == 2 else "·"
         return (
-            f'<div class="fx-score">{score or "· - ·"}</div>'
-            f'<div class="fx-live-badge">LIVE</div>'
-            f'<div class="fx-vs-label">vs</div>'
+            f'<div class="fx-split-scores">'
+            f'<span class="fx-score-digit">{hg}</span>'
+            f'<span class="fx-live-badge">LIVE</span>'
+            f'<span class="fx-score-digit">{ag}</span>'
+            f'</div>'
         )
+
     return (
         f'<div class="fx-kickoff-time">{fx["kickoff"]}</div>'
         f'<div class="fx-kickoff-tz">{fx["kickoff_tz"]}</div>'
-        f'<div class="fx-vs-label">vs</div>'
     )
 
 
