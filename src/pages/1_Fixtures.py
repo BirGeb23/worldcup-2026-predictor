@@ -240,7 +240,7 @@ def _fixture_card(fx: dict) -> str:
     <span class="fx-meta-dot">·</span>
     <span class="fx-meta-grp">{fx["group"]}</span>
     <span class="fx-meta-dot">·</span>
-    <span>{fx["stadium"]}, {fx["city"]}</span>
+    <span>{fx["stadium"]} ({fx["city"]})</span>
   </div>
   <div class="fx-teams">
     <div class="fx-team-home">
