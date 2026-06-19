@@ -142,7 +142,7 @@ def get_standings() -> dict[str, dict]:
     }
 
     for fx in get_fixtures():
-        if fx.get("status") != "finished":
+        if fx.get("status") not in ("finished", "live"):
             continue
         score = fx.get("score", "")
         try:
