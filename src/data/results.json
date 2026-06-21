@@ -26,7 +26,14 @@
   "M025": { "score": "1-1", "status": "finished" },
   "M026": { "score": "4-1", "status": "finished" },
   "M027": { "score": "6-0", "status": "finished" },
-  "M028": { "score": "1-0", "status": "live" }
+  "M028": { "score": "1-0", "status": "finished" },
+  "M029": { "score": "2-0", "status": "finished" },
+  "M030": { "score": "0-1", "status": "finished" },
+  "M031": { "score": "3-0", "status": "finished" },
+  "M032": { "score": "0-1", "status": "finished" },
+  "M033": { "score": "5-1", "status": "finished" },
+  "M034": { "score": "2-1", "status": "finished" },
+  "M035": { "score": "0-0", "status": "finished" }
 }
 
   

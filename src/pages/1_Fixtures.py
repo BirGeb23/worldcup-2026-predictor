@@ -271,7 +271,7 @@ else:
 
         st.markdown(f"""
         <div class="fx-date-sep">
-          <span class="fx-date-label">📅 {label}</span>
+          <span class="fx-date-label">{label}</span>
           <div class="fx-date-rule"></div>
         </div>""", unsafe_allow_html=True)
 
