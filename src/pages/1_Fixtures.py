@@ -108,9 +108,17 @@ st.markdown("""
     display: flex; align-items: center;
     justify-content: center; gap: 0.45rem;
 }
+.fx-score-col {
+    display: flex; flex-direction: column; align-items: center;
+}
 .fx-score-digit {
     font-size: 1.35rem; font-weight: 900; color: #fff;
     line-height: 1; min-width: 1ch; text-align: center;
+}
+.fx-winner-bar {
+    height: 4px; border-radius: 4px;
+    background: #2ecc71;
+    width: 100%; min-width: 14px; margin-top: 4px;
 }
 .fx-sep-ft {
     font-size: 0.52rem; font-weight: 700;
@@ -194,6 +202,24 @@ sorted_dates = sorted(by_date.keys())
 
 # ── Render ────────────────────────────────────────────────────────────────────
 
+def _score_col(digit: str, is_winner: bool) -> str:
+    bar = '<div class="fx-winner-bar"></div>' if is_winner else '<div class="fx-winner-bar" style="visibility:hidden"></div>'
+    return (
+        f'<div class="fx-score-col">'
+        f'<span class="fx-score-digit">{digit}</span>'
+        f'{bar}'
+        f'</div>'
+    )
+
+
+def _winner_flags(hg: str, ag: str) -> tuple[bool, bool]:
+    try:
+        h, a = int(hg), int(ag)
+        return h > a, a > h
+    except ValueError:
+        return False, False
+
+
 def _center_html(fx: dict) -> str:
     status = fx.get("status", "upcoming")
     score  = fx.get("score", "")
@@ -201,11 +227,12 @@ def _center_html(fx: dict) -> str:
     if status == "finished" and score:
         parts = score.split("-", 1)
         hg, ag = (parts[0], parts[1]) if len(parts) == 2 else (score, "")
+        home_wins, away_wins = _winner_flags(hg, ag)
         return (
             f'<div class="fx-split-scores">'
-            f'<span class="fx-score-digit">{hg}</span>'
+            f'{_score_col(hg, home_wins)}'
             f'<span class="fx-sep-ft">FT</span>'
-            f'<span class="fx-score-digit">{ag}</span>'
+            f'{_score_col(ag, away_wins)}'
             f'</div>'
         )
 
@@ -213,11 +240,12 @@ def _center_html(fx: dict) -> str:
         parts = score.split("-", 1) if score else []
         hg = parts[0] if len(parts) == 2 else "·"
         ag = parts[1] if len(parts) == 2 else "·"
+        home_wins, away_wins = _winner_flags(hg, ag)
         return (
             f'<div class="fx-split-scores">'
-            f'<span class="fx-score-digit">{hg}</span>'
+            f'{_score_col(hg, home_wins)}'
             f'<span class="fx-live-badge">LIVE</span>'
-            f'<span class="fx-score-digit">{ag}</span>'
+            f'{_score_col(ag, away_wins)}'
             f'</div>'
         )
 
