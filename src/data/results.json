@@ -1,8 +1,8 @@
 {
   "M001": { "score": "2-0", "status": "finished" },
   "M002": { "score": "2-1", "status": "finished" },
-  "M003": { "score": "4-1", "status": "finished" },
-  "M004": { "score": "1-1", "status": "finished" },
+  "M003": { "score": "1-1", "status": "finished" },
+  "M004": { "score": "4-1", "status": "finished" },
   "M005": { "score": "1-1", "status": "finished" },
   "M006": { "score": "1-1", "status": "finished" },
   "M007": { "score": "0-1", "status": "finished" },
@@ -45,7 +45,33 @@
   "M044": { "score": "1-2", "status": "finished" },
   "M045": { "score": "5-0", "status": "finished" },
   "M046": { "score": "0-0", "status": "finished" },
-  "M047": { "score": "0-1", "status": "finished" }
+  "M047": { "score": "0-1", "status": "finished" },
+  "M048": { "score": "1-0", "status": "finished" },
+  "M049": { "score": "2-1", "status": "finished" },
+  "M050": { "score": "3-1", "status": "finished" },
+  "M051": { "score": "0-3", "status": "finished" },
+  "M052": { "score": "4-2", "status": "finished" },
+  "M053": { "score": "0-3", "status": "finished" },
+  "M054": { "score": "1-0", "status": "finished" },
+  "M055": { "score": "0-2", "status": "finished" },
+  "M056": { "score": "2-1", "status": "finished" },
+  "M057": { "score": "1-1", "status": "finished" },
+  "M058": { "score": "1-3", "status": "finished" },
+  "M059": { "score": "3-2", "status": "finished" },
+  "M060": { "score": "0-0", "status": "finished" },
+  "M061": { "score": "1-4", "status": "finished" },
+  "M062": { "score": "5-0", "status": "finished" },
+  "M063": { "score": "0-0", "status": "finished" },
+  "M064": { "score": "0-1", "status": "finished" },
+  "M065": { "score": "1-1", "status": "finished" },
+  "M066": { "score": "1-5", "status": "finished" },
+  "M067": { "score": "0-2", "status": "finished" },
+  "M068": { "score": "2-1", "status": "finished" },
+  "M069": { "score": "0-0", "status": "finished" },
+  "M070": { "score": "3-1", "status": "finished" },
+  "M071": { "score": "3-3", "status": "finished" },
+  "M072": { "score": "1-3", "status": "finished" }
+
 }
 
   
